@@ -19,9 +19,22 @@ CD  %buildpath%
 RMDIR /S /Q .
 
 cd %baseDir%
-call buildWin.bat
-call archive.bat
-call buildAndroid.bat
+
+if %1 == win
+(
+    call buildWin.bat
+    call archive.bat
+)
+else if %1 == android
+(
+   call buildAndroid.bat
+)
+else
+(
+    call buildWin.bat
+    call archive.bat
+    call buildAndroid.bat
+)
 
 cd %buildpath%
 dir
