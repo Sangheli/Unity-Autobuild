@@ -13,6 +13,10 @@ set projectPathAndroid=
 
 set buildpath=
 
+del /S /Q %buildpath%
+CD  %buildpath%
+RMDIR /S /Q .
+
 cd %baseDir%
 call buildWin.bat
 
