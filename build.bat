@@ -1,5 +1,8 @@
 set name=
 
+set tgToken=
+set tgChatid=
+
 SET baseDir=%cd%
 
 set unityPath=
@@ -21,3 +24,6 @@ call archive.bat
 
 cd %buildpath%
 dir
+
+cd %baseDir%
+.venv\scripts\python .\telegramBot.py -folderpath %buildpath% -token %tgToken% -chatid %tgChatid%
