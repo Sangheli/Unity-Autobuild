@@ -12,6 +12,7 @@ set projectPath=
 set projectPathAndroid=
 
 set buildpath=
+REM commands
 
 del /S /Q %buildpath%
 CD  %buildpath%
@@ -19,12 +20,8 @@ RMDIR /S /Q .
 
 cd %baseDir%
 call buildWin.bat
-
-cd %baseDir%
-call buildAndroid.bat
-
-cd %baseDir%
 call archive.bat
+call buildAndroid.bat
 
 cd %buildpath%
 dir
