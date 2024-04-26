@@ -1,5 +1,4 @@
-import asyncio
-from telegram import Bot
+import requests
 import argparse
 import os
 
@@ -10,21 +9,25 @@ parser.add_argument('-token', type=str)
 parser.add_argument('-chatid', type=str)
 
 args = parser.parse_args()
-
 folder_path = args.folderpath
-TOKEN = args.token
-CHAT_ID = args.chatid
 
-file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path)
-              if os.path.isfile(os.path.join(folder_path, f))]
+if not os.path.exists(folder_path):
+    print(f"[{folder_path}] Folder not exist")
+    exit(0)
 
+# Set the Telegram Bot API URL
+url = f'https://api.telegram.org/bot{args.token}/sendDocument'
 
-async def send_telegram_message():
-    bot = Bot(token=TOKEN)
-    for filename in file_names:
-        with open(filename, 'rb') as file:
-            content = file.read().decode('utf-8', errors='ignore')
-            await bot.send_document(CHAT_ID, content)
+for filename in os.listdir(folder_path):
+    full_path = os.path.join(folder_path, filename)
+    if not os.path.isfile(full_path):
+        continue
 
+    # Open the file in binary mode
+    with open(full_path, 'rb') as file:
+        files = {'document': file}
+        params = {'chat_id': args.chatid}
 
-asyncio.run(send_telegram_message())
+        # Send the document to the Telegram Bot API
+        response = requests.post(url, params=params, files=files)
+        print(f'[{filename}]', response.json())
