@@ -15,7 +15,8 @@ tg_chatid = ''
 
 
 def clean():
-    shutil.rmtree(buildpath, ignore_errors=True)
+    contents = [os.path.join(buildpath, i) for i in os.listdir(buildpath)]
+    [shutil.rmtree(i) if os.path.isdir(i) and not os.path.islink(i) else os.remove(i) for i in contents]
 
 
 def create_folder():
