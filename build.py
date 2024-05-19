@@ -25,19 +25,20 @@ def clean():
     [shutil.rmtree(i) if os.path.isdir(i) and not os.path.islink(i) else os.remove(i) for i in contents]
 
 
-def create_folder():
-    newpath = f'{buildpath}\\Windows'
-    if not os.path.exists(newpath):
-        os.makedirs(newpath)
+def create_folder(string_path):
+    if not os.path.exists(string_path):
+        os.makedirs(string_path)
 
 
 def build_win(app_name):
+    create_folder(f'{buildpath}\\Windows')
     os.chdir(BASE_UNIT_PATH)
     os.system(
         f'{UNITY} -quit -batchmode -nographics -projectpath {projectPath} -buildWindowsPlayer "{buildpath}\\Windows\\{app_name}.exe"')
 
 
 def build_android(app_name):
+    create_folder(f'{buildpath}')
     os.chdir(BASE_UNIT_PATH)
     os.system(
         f'{UNITY} -quit -batchmode -nographics -projectPath {projectPathAndroid} -executeMethod BuildScript.PerformBuild "{buildpath}\\{app_name}{date_time}.apk"')
@@ -67,7 +68,6 @@ def upload_tg():
 
 
 clean()
-create_folder()
 
 build_win(name)
 zipdir(f'{buildpath}\\Windows', f'{buildpath}\\{name}{date_time}_windows.7z')
