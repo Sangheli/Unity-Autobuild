@@ -1,7 +1,11 @@
 import os
 import shutil
-
 import requests
+from datetime import datetime
+
+now = datetime.now()
+date_time = now.strftime("_%Y_%m_%d_%H_%M_%S")
+print("date and time:", date_time)
 
 BASE_UNIT_PATH = ''
 UNITY = 'Unity.exe'
@@ -25,16 +29,16 @@ def create_folder():
         os.makedirs(newpath)
 
 
-def build_win(name):
+def build_win(app_name):
     os.chdir(BASE_UNIT_PATH)
     os.system(
-        f'{UNITY} -quit -batchmode -nographics -projectpath {projectPath} -buildWindowsPlayer "{buildpath}\\Windows\\{name}.exe"')
+        f'{UNITY} -quit -batchmode -nographics -projectpath {projectPath} -buildWindowsPlayer "{buildpath}\\Windows\\{app_name}.exe"')
 
 
-def build_android(name):
+def build_android(app_name):
     os.chdir(BASE_UNIT_PATH)
     os.system(
-        f'{UNITY} -quit -batchmode -nographics -projectPath {projectPathAndroid} -executeMethod BuildScript.PerformBuild "{buildpath}\\{name}.apk"')
+        f'{UNITY} -quit -batchmode -nographics -projectPath {projectPathAndroid} -executeMethod BuildScript.PerformBuild "{buildpath}\\{app_name}{date_time}.apk"')
 
 
 def zipdir():
