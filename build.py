@@ -3,6 +3,8 @@ import shutil
 import requests
 from datetime import datetime
 
+path_7z = 'C:\\Program Files\\7-Zip\\'
+
 now = datetime.now()
 date_time = now.strftime("_%Y_%m_%d_%H_%M_%S")
 print("date and time:", date_time)
@@ -41,8 +43,9 @@ def build_android(app_name):
         f'{UNITY} -quit -batchmode -nographics -projectPath {projectPathAndroid} -executeMethod BuildScript.PerformBuild "{buildpath}\\{app_name}{date_time}.apk"')
 
 
-def zipdir():
-    shutil.make_archive(f'{buildpath}\\build', 'zip', f'{buildpath}\\Windows')
+def zipdir(to_archive_path, output_path):
+    os.chdir(f'{path_7z}')
+    os.system(f'7z.exe a {output_path} {to_archive_path} -mx9 -v49m')
 
 
 def upload_tg():
@@ -65,9 +68,13 @@ def upload_tg():
 
 clean()
 create_folder()
+
 build_win(name)
+zipdir(f'{buildpath}\\Windows', f'{buildpath}\\{name}{date_time}_windows.7z')
+
 build_android(name)
-zipdir()
+# zipdir(f'{buildpath}\\*.apk', f'{buildpath}\\{name}{date_time}_apk.7z')
+
 os.chdir(buildpath)
 os.system('dir')
 upload_tg()
