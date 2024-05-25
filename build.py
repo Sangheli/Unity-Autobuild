@@ -30,6 +30,11 @@ def create_folder(string_path):
         os.makedirs(string_path)
 
 
+def git_update(projectPath):
+    os.chdir(f'{projectPath}\\')
+    os.system(f'git pull')
+
+
 def build_win(app_name):
     create_folder(f'{buildpath}\\Windows')
     os.chdir(BASE_UNIT_PATH)
@@ -46,7 +51,11 @@ def build_android(app_name):
 
 def zipdir(to_archive_path, output_path):
     os.chdir(f'{path_7z}')
-    os.system(f'7z.exe a {output_path} {to_archive_path} -mx9 -v49m')
+    os.system(f'7z.exe a {output_path}.7z {to_archive_path} -mx9 -v49m')
+
+
+def zipdir_orig(to_archive_path, output_path):
+    shutil.make_archive(output_path, 'zip', to_archive_path)
 
 
 def upload_tg():
@@ -69,9 +78,11 @@ def upload_tg():
 
 clean()
 
+git_update(projectPath)
 build_win(name)
-zipdir(f'{buildpath}\\Windows', f'{buildpath}\\{name}{date_time}_windows.7z')
+zipdir_orig(f'{buildpath}\\Windows', f'{buildpath}\\{name}{date_time}_windows')
 
+git_update(projectPathAndroid)
 build_android(name)
 # zipdir(f'{buildpath}\\*.apk', f'{buildpath}\\{name}{date_time}_apk.7z')
 
