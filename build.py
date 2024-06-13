@@ -35,11 +35,11 @@ def git_update(projectPath):
     os.system(f'git pull')
 
 
-def build_win(app_name):
-    create_folder(f'{buildpath}\\Windows')
+def build_win(app_name,build_folder,project_path):
+    create_folder(f'{buildpath}\\{build_folder}')
     os.chdir(BASE_UNIT_PATH)
     os.system(
-        f'{UNITY} -quit -batchmode -nographics -projectpath {projectPath} -buildWindowsPlayer "{buildpath}\\Windows\\{app_name}.exe"')
+        f'{UNITY} -quit -batchmode -nographics -projectpath {project_path} -buildWindowsPlayer "{buildpath}\\{build_folder}\\{app_name}.exe"')
 
 
 def build_android(app_name):
@@ -78,8 +78,11 @@ def upload_tg():
 
 clean()
 
+git_update(projectPathWindowsRender)
+build_win(name,'WindowsRender',projectPathWindowsRender)
+
 git_update(projectPath)
-build_win(name)
+build_win(name,'Windows',projectPath)
 zipdir_orig(f'{buildpath}\\Windows', f'{buildpath}\\{name}{date_time}_windows')
 
 git_update(projectPathAndroid)
