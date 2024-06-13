@@ -9,12 +9,12 @@ now = datetime.now()
 date_time = now.strftime("_%Y_%m_%d_%H_%M_%S")
 print("date and time:", date_time)
 
-BASE_UNIT_PATH = ''
+BASE_UNIT_PATH = 'C:\\Program Files\\Unity\\Hub\\Editor\\2023.2.10f1\\Editor\\'
 UNITY = 'Unity.exe'
-projectPath = ''
-projectPathAndroid = ''
-buildpath = ''
-name = ''
+projectPath = 'C:\\_Work\\Trem\\Unity-PotatoZeldaForBuild'
+projectPathAndroid = 'C:\\_Work\\Trem\\Unity-PotatoZeldaAndroid'
+buildpath = 'C:\\_Work\\Trem\\build'
+name = 'PotatoKing'
 
 tg_token = ''
 tg_chatid = ''
