@@ -13,6 +13,7 @@ BASE_UNIT_PATH = 'C:\\Program Files\\Unity\\Hub\\Editor\\2023.2.10f1\\Editor\\'
 UNITY = 'Unity.exe'
 projectPath = 'C:\\_Work\\Trem\\Unity-PotatoZeldaForBuild'
 projectPathAndroid = 'C:\\_Work\\Trem\\Unity-PotatoZeldaAndroid'
+projectPathWindowsRender = 'C:\\_Work\\Trem\\Unity-PotatoZeldaForRender'
 buildpath = 'C:\\_Work\\Trem\\build'
 name = 'PotatoKing'
 
