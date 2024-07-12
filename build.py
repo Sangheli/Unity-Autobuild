@@ -36,6 +36,11 @@ def git_update(projectPath):
     os.system(f'git pull')
 
 
+def git_reset(projectPath):
+    os.chdir(f'{projectPath}\\')
+    os.system(f'git reset --hard HEAD')
+
+
 def build_win(app_name,build_folder,project_path):
     create_folder(f'{buildpath}\\{build_folder}')
     os.chdir(BASE_UNIT_PATH)
@@ -48,6 +53,13 @@ def build_android(app_name):
     os.chdir(BASE_UNIT_PATH)
     os.system(
         f'{UNITY} -quit -batchmode -nographics -projectPath {projectPathAndroid} -executeMethod BuildScript.PerformBuild "{buildpath}\\{app_name}{date_time}.apk"')
+
+
+def build_android_map_editor(app_name):
+    create_folder(f'{buildpath}')
+    os.chdir(BASE_UNIT_PATH)
+    os.system(
+        f'{UNITY} -quit -batchmode -nographics -projectPath {projectPathAndroid} -executeMethod BuildScriptMapEditor.PerformBuild "{buildpath}\\{app_name}MapEditor{date_time}.apk"')
 
 
 def zipdir(to_archive_path, output_path):
@@ -88,6 +100,8 @@ zipdir_orig(f'{buildpath}\\Windows', f'{buildpath}\\{name}{date_time}_windows')
 
 git_update(projectPathAndroid)
 build_android(name)
+build_android_map_editor(name)
+git_reset(projectPathAndroid)
 # zipdir(f'{buildpath}\\*.apk', f'{buildpath}\\{name}{date_time}_apk.7z')
 
 os.chdir(buildpath)
