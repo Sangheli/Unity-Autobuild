@@ -48,18 +48,18 @@ def build_win(app_name,build_folder,project_path):
         f'{UNITY} -quit -batchmode -nographics -projectpath {project_path} -buildWindowsPlayer "{buildpath}\\{build_folder}\\{app_name}.exe"')
 
 
-def build_android(app_name):
+def build_android(app_name,project_path):
     create_folder(f'{buildpath}')
     os.chdir(BASE_UNIT_PATH)
     os.system(
-        f'{UNITY} -quit -batchmode -nographics -projectPath {projectPathAndroid} -executeMethod BuildScript.PerformBuild "{buildpath}\\{app_name}{date_time}.apk"')
+        f'{UNITY} -quit -batchmode -nographics -projectPath {project_path} -executeMethod BuildScript.PerformBuild "{buildpath}\\{app_name}{date_time}.apk"')
 
 
-def build_android_map_editor(app_name):
+def build_android_map_editor(app_name,project_path):
     create_folder(f'{buildpath}')
     os.chdir(BASE_UNIT_PATH)
     os.system(
-        f'{UNITY} -quit -batchmode -nographics -projectPath {projectPathAndroid} -executeMethod BuildScriptMapEditor.PerformBuild "{buildpath}\\{app_name}MapEditor{date_time}.apk"')
+        f'{UNITY} -quit -batchmode -nographics -projectPath {project_path} -executeMethod BuildScriptMapEditor.PerformBuild "{buildpath}\\{app_name}MapEditor{date_time}.apk"')
 
 
 def zipdir(to_archive_path, output_path):
@@ -99,8 +99,8 @@ build_win(name,'Windows',projectPath)
 zipdir_orig(f'{buildpath}\\Windows', f'{buildpath}\\{name}{date_time}_windows')
 
 git_update(projectPathAndroid)
-build_android(name)
-build_android_map_editor(name)
+build_android(name, projectPathAndroid)
+build_android_map_editor(name, projectPathAndroid)
 git_reset(projectPathAndroid)
 # zipdir(f'{buildpath}\\*.apk', f'{buildpath}\\{name}{date_time}_apk.7z')
 
