@@ -91,13 +91,16 @@ def upload_tg():
 
 clean()
 
+git_reset(projectPathWindowsRender)
 git_update(projectPathWindowsRender)
 build_win(name,'WindowsRender',projectPathWindowsRender)
 
+git_reset(projectPath)
 git_update(projectPath)
 build_win(name,'Windows',projectPath)
 zipdir_orig(f'{buildpath}\\Windows', f'{buildpath}\\{name}{date_time}_windows')
 
+git_reset(projectPathAndroid)
 git_update(projectPathAndroid)
 build_android(name, projectPathAndroid)
 build_android_map_editor(name, projectPathAndroid)
