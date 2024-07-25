@@ -137,7 +137,7 @@ log = get_log(projectPath)
 log_extracted = extract_history(log, hash)
 
 build_win(name, 'Windows', projectPath)
-save_to_folder(log_extracted,f'{buildpath}\\Windows\\patchnote.txt',date_time)
+save_to_folder(log_extracted, f'{buildpath}\\patchnote.txt', date_time)
 zipdir_orig(f'{buildpath}\\Windows', f'{buildpath}\\{name}_{date_time}_windows')
 
 # android
