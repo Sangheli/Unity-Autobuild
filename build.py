@@ -112,15 +112,18 @@ def extract_history(log, hash):
 
 clean()
 
+# render
 git_reset(projectPathWindowsRender)
 git_update(projectPathWindowsRender)
 build_win(name,'WindowsRender',projectPathWindowsRender)
 
+# windows
 git_reset(projectPath)
 git_update(projectPath)
 build_win(name, 'Windows', projectPath)
 zipdir_orig(f'{buildpath}\\Windows', f'{buildpath}\\{name}{date_time}_windows')
 
+# android
 git_reset(projectPathAndroid)
 git_update(projectPathAndroid)
 build_android(name, projectPathAndroid)
@@ -128,6 +131,7 @@ build_android(name, projectPathAndroid)
 git_reset(projectPathAndroid)
 # zipdir(f'{buildpath}\\*.apk', f'{buildpath}\\{name}{date_time}_apk.7z')
 
+# upload
 os.chdir(buildpath)
 os.system('dir')
 upload_tg()
