@@ -7,7 +7,7 @@ import subprocess as sp
 path_7z = 'C:\\Program Files\\7-Zip\\'
 
 now = datetime.now()
-date_time = now.strftime("_%Y_%m_%d_%H_%M_%S")
+date_time = now.strftime("%Y_%m_%d_%H_%M_%S")
 print("date and time:", date_time)
 
 BASE_UNIT_PATH = 'C:\\Program Files\\Unity\\Hub\\Editor\\2023.2.10f1\\Editor\\'
@@ -53,14 +53,14 @@ def build_android(app_name, project_path):
     create_folder(f'{buildpath}')
     os.chdir(BASE_UNIT_PATH)
     os.system(
-        f'{UNITY} -quit -batchmode -nographics -projectPath {project_path} -executeMethod BuildScript.PerformBuild "{buildpath}\\{app_name}{date_time}.apk"')
+        f'{UNITY} -quit -batchmode -nographics -projectPath {project_path} -executeMethod BuildScript.PerformBuild "{buildpath}\\{app_name}_{date_time}.apk"')
 
 
 def build_android_map_editor(app_name, project_path):
     create_folder(f'{buildpath}')
     os.chdir(BASE_UNIT_PATH)
     os.system(
-        f'{UNITY} -quit -batchmode -nographics -projectPath {project_path} -executeMethod BuildScriptMapEditor.PerformBuild "{buildpath}\\{app_name}MapEditor{date_time}.apk"')
+        f'{UNITY} -quit -batchmode -nographics -projectPath {project_path} -executeMethod BuildScriptMapEditor.PerformBuild "{buildpath}\\{app_name}MapEditor_{date_time}.apk"')
 
 
 def zipdir(to_archive_path, output_path):
@@ -106,8 +106,19 @@ def extract_history(log, hash):
     result = []
 
     for x in log:
+        result.append(x[9:])
         if hash in x:
-            result.append(x[9:])
+            result.append("\n[Old history]\n")
+
+    return result
+
+
+def save_to_folder(log, output_path,date_time):
+    with open(f'{output_path}', "w") as file:
+        file.write("["+date_time+"]"+"\n\n")
+
+        for x in log:
+            file.write(x + "\n")
 
 
 clean()
@@ -115,13 +126,19 @@ clean()
 # render
 git_reset(projectPathWindowsRender)
 git_update(projectPathWindowsRender)
-build_win(name,'WindowsRender',projectPathWindowsRender)
+build_win(name, 'WindowsRender', projectPathWindowsRender)
 
 # windows
 git_reset(projectPath)
+hash = get_current_hash(projectPath)
+
 git_update(projectPath)
+log = get_log(projectPath)
+log_extracted = extract_history(log, hash)
+
 build_win(name, 'Windows', projectPath)
-zipdir_orig(f'{buildpath}\\Windows', f'{buildpath}\\{name}{date_time}_windows')
+save_to_folder(log_extracted,f'{buildpath}\\Windows\\patchnote.txt',date_time)
+zipdir_orig(f'{buildpath}\\Windows', f'{buildpath}\\{name}_{date_time}_windows')
 
 # android
 git_reset(projectPathAndroid)
