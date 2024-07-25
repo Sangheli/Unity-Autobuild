@@ -123,10 +123,10 @@ def save_to_folder(log, output_path,date_time):
 
 clean()
 
-# render
-git_reset(projectPathWindowsRender)
-git_update(projectPathWindowsRender)
-build_win(name, 'WindowsRender', projectPathWindowsRender)
+# # render
+# git_reset(projectPathWindowsRender)
+# git_update(projectPathWindowsRender)
+# build_win(name, 'WindowsRender', projectPathWindowsRender)
 
 # windows
 git_reset(projectPath)
@@ -140,13 +140,13 @@ build_win(name, 'Windows', projectPath)
 save_to_folder(log_extracted, f'{buildpath}\\patchnote.txt', date_time)
 zipdir_orig(f'{buildpath}\\Windows', f'{buildpath}\\{name}_{date_time}_windows')
 
-# android
-git_reset(projectPathAndroid)
-git_update(projectPathAndroid)
-build_android(name, projectPathAndroid)
-# build_android_map_editor(name, projectPathAndroid)
-git_reset(projectPathAndroid)
-# zipdir(f'{buildpath}\\*.apk', f'{buildpath}\\{name}{date_time}_apk.7z')
+# # android
+# git_reset(projectPathAndroid)
+# git_update(projectPathAndroid)
+# build_android(name, projectPathAndroid)
+# # build_android_map_editor(name, projectPathAndroid)
+# git_reset(projectPathAndroid)
+# # zipdir(f'{buildpath}\\*.apk', f'{buildpath}\\{name}{date_time}_apk.7z')
 
 # upload
 os.chdir(buildpath)
