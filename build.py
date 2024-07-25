@@ -41,21 +41,21 @@ def git_reset(projectPath):
     os.system(f'git reset --hard HEAD')
 
 
-def build_win(app_name,build_folder,project_path):
+def build_win(app_name, build_folder, project_path):
     create_folder(f'{buildpath}\\{build_folder}')
     os.chdir(BASE_UNIT_PATH)
     os.system(
         f'{UNITY} -quit -batchmode -nographics -projectpath {project_path} -buildWindowsPlayer "{buildpath}\\{build_folder}\\{app_name}.exe"')
 
 
-def build_android(app_name,project_path):
+def build_android(app_name, project_path):
     create_folder(f'{buildpath}')
     os.chdir(BASE_UNIT_PATH)
     os.system(
         f'{UNITY} -quit -batchmode -nographics -projectPath {project_path} -executeMethod BuildScript.PerformBuild "{buildpath}\\{app_name}{date_time}.apk"')
 
 
-def build_android_map_editor(app_name,project_path):
+def build_android_map_editor(app_name, project_path):
     create_folder(f'{buildpath}')
     os.chdir(BASE_UNIT_PATH)
     os.system(
