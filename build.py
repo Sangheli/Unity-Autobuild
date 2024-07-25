@@ -15,7 +15,7 @@ projectPath = 'C:\\_Work\\Trem\\Unity-PotatoZeldaForBuild'
 projectPathAndroid = 'C:\\_Work\\Trem\\Unity-PotatoZeldaAndroid'
 projectPathWindowsRender = 'C:\\_Work\\Trem\\Unity-PotatoZeldaForRender'
 buildpath = 'C:\\_Work\\Trem\\build'
-name = 'PotatoKing'
+name = 'MiniTankGame'
 
 tg_token = ''
 tg_chatid = ''
