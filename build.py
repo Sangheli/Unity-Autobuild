@@ -2,6 +2,7 @@ import os
 import shutil
 import requests
 from datetime import datetime
+import subprocess as sp
 
 path_7z = 'C:\\Program Files\\7-Zip\\'
 
@@ -87,6 +88,26 @@ def upload_tg():
             # Send the document to the Telegram Bot API
             response = requests.post(url, params=params, files=files)
             print(f'[{filename}]', response.json())
+
+
+def get_current_hash(projectPath):
+    os.chdir(f'{projectPath}\\')
+    output = sp.getoutput('git rev-parse HEAD')
+    return output[:8]
+
+
+def get_log(projectPath):
+    os.chdir(f'{projectPath}\\')
+    result = sp.getoutput('git log --oneline HEAD')
+    return result.split('\n')
+
+
+def extract_history(log, hash):
+    result = []
+
+    for x in log:
+        if hash in x:
+            result.append(x[9:])
 
 
 clean()
