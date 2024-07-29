@@ -121,35 +121,41 @@ def save_to_folder(log, output_path,date_time):
             file.write(x + "\n")
 
 
+def build_render():
+    git_reset(projectPathWindowsRender)
+    git_update(projectPathWindowsRender)
+    build_win(name, 'WindowsRender', projectPathWindowsRender)
+
+
+def build_windows():
+    git_reset(projectPath)
+    hash = get_current_hash(projectPath)
+
+    git_update(projectPath)
+    log = get_log(projectPath)
+    log_extracted = extract_history(log, hash)
+
+    build_win(name, 'Windows', projectPath)
+    save_to_folder(log_extracted, f'{buildpath}\\patchnote.txt', date_time)
+    zipdir_orig(f'{buildpath}\\Windows', f'{buildpath}\\{name}_{date_time}_windows')
+
+
+def build_android_full():
+    git_reset(projectPathAndroid)
+    git_update(projectPathAndroid)
+    build_android(name, projectPathAndroid)
+    git_reset(projectPathAndroid)
+
+
+def upload():
+    os.chdir(buildpath)
+    os.system('dir')
+    upload_tg()
+
+
 clean()
-
-# # render
-# git_reset(projectPathWindowsRender)
-# git_update(projectPathWindowsRender)
-# build_win(name, 'WindowsRender', projectPathWindowsRender)
-
-# windows
-git_reset(projectPath)
-hash = get_current_hash(projectPath)
-
-git_update(projectPath)
-log = get_log(projectPath)
-log_extracted = extract_history(log, hash)
-
-build_win(name, 'Windows', projectPath)
-save_to_folder(log_extracted, f'{buildpath}\\patchnote.txt', date_time)
-zipdir_orig(f'{buildpath}\\Windows', f'{buildpath}\\{name}_{date_time}_windows')
-
-# # android
-# git_reset(projectPathAndroid)
-# git_update(projectPathAndroid)
-# build_android(name, projectPathAndroid)
-# # build_android_map_editor(name, projectPathAndroid)
-# git_reset(projectPathAndroid)
-# # zipdir(f'{buildpath}\\*.apk', f'{buildpath}\\{name}{date_time}_apk.7z')
-
-# upload
-os.chdir(buildpath)
-os.system('dir')
-upload_tg()
+build_render()
+build_windows()
+build_android_full()
+upload()
 print('\n[Build done]')
