@@ -106,7 +106,7 @@ def extract_history(log, hash):
     result = []
 
     for x in log:
-        result.append(x[9:])
+        result.append("* "+x[9:])
         if hash in x:
             result.append("\n[Old history]\n")
 
