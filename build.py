@@ -15,6 +15,7 @@ UNITY = 'Unity.exe'
 projectPath = 'C:\\_Work\\Trem\\Unity-PotatoZeldaForBuild'
 projectPathAndroid = 'C:\\_Work\\Trem\\Unity-PotatoZeldaAndroid'
 projectPathWindowsRender = 'C:\\_Work\\Trem\\Unity-PotatoZeldaForRender'
+projectPathWeb = 'C:\\_Work\\Trem\\Unity-PotatoZeldaWebgl'
 buildpath = 'C:\\_Work\\Trem\\build'
 name = 'MiniTankGame'
 
@@ -62,6 +63,11 @@ def build_android_map_editor(app_name, project_path):
     os.system(
         f'{UNITY} -quit -batchmode -nographics -projectPath {project_path} -executeMethod BuildScriptMapEditor.PerformBuild "{buildpath}\\{app_name}MapEditor_{date_time}.apk"')
 
+def build_web(app_name, project_path):
+    create_folder(f'{buildpath}')
+    os.chdir(BASE_UNIT_PATH)
+    os.system(
+        f'{UNITY} -quit -batchmode -nographics -projectPath {project_path} -executeMethod BuildScriptWeb.PerformBuild "{buildpath}\\{app_name}_{date_time}_web"')
 
 def zipdir(to_archive_path, output_path):
     os.chdir(f'{path_7z}')
@@ -127,7 +133,7 @@ def build_render():
     build_win(name, 'WindowsRender', projectPathWindowsRender)
 
 
-def build_windows():
+def build_windows_full():
     git_reset(projectPath)
     hash = get_current_hash(projectPath)
 
@@ -147,6 +153,12 @@ def build_android_full():
     git_reset(projectPathAndroid)
 
 
+def build_web_full():
+    git_reset(projectPathWeb)
+    git_update(projectPathWeb)
+    build_web(name, projectPathWeb)
+    zipdir_orig(f'{buildpath}\\{name}_{date_time}_web', f'{buildpath}\\{name}_{date_time}_web')
+
 def upload():
     os.chdir(buildpath)
     os.system('dir')
@@ -154,8 +166,9 @@ def upload():
 
 
 clean()
-build_render()
-build_windows()
+# build_render()
+build_windows_full()
 build_android_full()
+build_web_full()
 upload()
 print('\n[Build done]')
