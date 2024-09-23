@@ -59,11 +59,11 @@ def build_android(app_name, project_path):
         f'{UNITY} -quit -batchmode -nographics -projectPath {project_path} -executeMethod BuildScript.PerformBuild "{buildpath}\\{app_name}_{date_time}.apk"')
 
 
-def build_mac(app_name, project_path):
+def build_mac(app_name,build_folder, project_path):
     create_folder(f'{buildpath}')
     os.chdir(BASE_UNIT_PATH)
     os.system(
-        f'{UNITY} -quit -batchmode -nographics -projectPath {project_path} -executeMethod BuildScriptMac.PerformBuild "{buildpath}\\{app_name}_{date_time}"')
+        f'{UNITY} -quit -batchmode -nographics -projectPath {project_path} -executeMethod BuildScriptMac.PerformBuild "{buildpath}\\{build_folder}\\{app_name}_{date_time}"')
 
 
 def build_android_map_editor(app_name, project_path):
@@ -164,7 +164,7 @@ def build_android_full():
 def build_mac_full():
     git_reset(projectPathMac)
     git_update(projectPathMac)
-    build_mac(name, projectPathMac)
+    build_mac(name, "MacOS" ,projectPathMac)
 
 
 def build_web_full():
