@@ -13,11 +13,13 @@ print("date and time:", date_time)
 BASE_UNIT_PATH = 'C:\\Program Files\\Unity\\Hub\\Editor\\2023.2.10f1\\Editor\\'
 UNITY = 'Unity.exe'
 projectPath = 'C:\\_Work\\Trem\\Unity-PotatoZeldaForBuild'
+projectPathMac = 'C:\\_Work\\Trem\\Unity-PotatoZeldaForBuild'
 projectPathAndroid = 'C:\\_Work\\Trem\\Unity-PotatoZeldaAndroid'
 projectPathWindowsRender = 'C:\\_Work\\Trem\\Unity-PotatoZeldaForRender'
 projectPathWeb = 'C:\\_Work\\Trem\\Unity-PotatoZeldaWebgl'
 buildpath = 'C:\\_Work\\Trem\\build'
-name = 'MiniTankGame'
+dropboxpath = 'C:\\Dropbox\\Public'
+name = 'MiniTank'
 
 tg_token = ''
 tg_chatid = ''
@@ -55,6 +57,13 @@ def build_android(app_name, project_path):
     os.chdir(BASE_UNIT_PATH)
     os.system(
         f'{UNITY} -quit -batchmode -nographics -projectPath {project_path} -executeMethod BuildScript.PerformBuild "{buildpath}\\{app_name}_{date_time}.apk"')
+
+
+def build_mac(app_name, project_path):
+    create_folder(f'{buildpath}')
+    os.chdir(BASE_UNIT_PATH)
+    os.system(
+        f'{UNITY} -quit -batchmode -nographics -projectPath {project_path} -executeMethod BuildScriptMac.PerformBuild "{buildpath}\\{app_name}_{date_time}"')
 
 
 def build_android_map_editor(app_name, project_path):
@@ -130,7 +139,7 @@ def save_to_folder(log, output_path,date_time):
 def build_render():
     git_reset(projectPathWindowsRender)
     git_update(projectPathWindowsRender)
-    build_win(name, 'WindowsRender', projectPathWindowsRender)
+    build_win(name, 'Windows', projectPathWindowsRender)
 
 
 def build_windows_full():
@@ -141,16 +150,21 @@ def build_windows_full():
     log = get_log(projectPath)
     log_extracted = extract_history(log, hash)
 
-    build_win(name, 'Windows', projectPath)
-    save_to_folder(log_extracted, f'{buildpath}\\patchnote.txt', date_time)
-    zipdir_orig(f'{buildpath}\\Windows', f'{buildpath}\\{name}_{date_time}_windows')
+    build_win(name, 'WindowsCompressed', projectPath)
+    save_to_folder(log_extracted, f'{buildpath}\\patchnote_{date_time}.txt', date_time)
+    zipdir_orig(f'{buildpath}\\WindowsCompressed', f'{buildpath}\\{name}_{date_time}_WindowsCompressed')
 
 
 def build_android_full():
     git_reset(projectPathAndroid)
     git_update(projectPathAndroid)
     build_android(name, projectPathAndroid)
-    git_reset(projectPathAndroid)
+
+
+def build_mac_full():
+    git_reset(projectPathMac)
+    git_update(projectPathMac)
+    build_mac(name, projectPathMac)
 
 
 def build_web_full():
@@ -165,10 +179,19 @@ def upload():
     upload_tg()
 
 
+def copy_dropbox():
+    for filename in os.listdir(buildpath):
+        full_path = os.path.join(buildpath, filename)
+        if os.path.isfile(full_path):
+            shutil.copy(full_path, dropboxpath)
+
+
 clean()
-# build_render()
+build_render()
 build_windows_full()
 build_android_full()
-build_web_full()
+build_mac_full()
+# build_web_full()
 upload()
+copy_dropbox()
 print('\n[Build done]')
