@@ -147,6 +147,13 @@ def record_init_commit_hash(config, log):
         log.info(f"'{config["REPO_PATH"]}' Initial commit hash: {commit_hash}")
     return commit_hash
 
+def check_butler_login():
+    try:
+        subprocess.run([BUTLER_EXECUTABLE, 'whoami'], check=True, stdout=subprocess.DEVNULL)
+    except subprocess.CalledProcessError:
+        print("Butler is not logged in. Run `butler login` manually.")
+        exit(1)
+
 def main():
     last_commit_hashes = {}
 
