@@ -22,7 +22,7 @@ CHECK_INTERVAL = 60  # Time in seconds to wait before checking for new commits
 # List of project configurations
 CONFIGS = [
     {
-        "BRANCH": 'origin/main',
+        "BRANCH": 'origin/update1',
         "REPO_PATH": 'C:\\_Work\\HellDigger-Web',
         "ITCH_PROJECT": 'sangheli/ld57helldiggeridle-debug:webgl',
         "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.0.28f1\\Editor\\Unity.exe"',
