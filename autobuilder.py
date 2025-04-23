@@ -23,10 +23,10 @@ CHECK_INTERVAL = 60  # Time in seconds to wait before checking for new commits
 CONFIGS = [
     {
         "BRANCH": 'origin/main',
-        "REPO_PATH": 'C:\\_Work\\ld571',
+        "REPO_PATH": 'C:\\_Work\\HellDigger-Web',
         "ITCH_PROJECT": 'sangheli/ld57helldiggeridle-debug:webgl',
         "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.0.28f1\\Editor\\Unity.exe"',
-        "WEBGL_BUILD_PATH": 'C:\\_Work\\ld571\\webgl_build',
+        "WEBGL_BUILD_PATH": 'C:\\_Work\\HellDigger-Web\\webgl_build',
         "UNITY_BUILD_METHOD": "WebGLBuilder.Build",
         "FORCE": False,
     },
