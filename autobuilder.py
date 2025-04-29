@@ -116,22 +116,25 @@ def build_unity_project(config, log):
             f'{config["UNITY_EXECUTABLE"]} -batchmode -nographics -quit '
             f'-projectPath "{config["REPO_PATH"]}" '
             f'-executeMethod {config["UNITY_BUILD_METHOD"]} '
-            f'-buildTarget WebGL '
-            f'-output "{config["WEBGL_BUILD_PATH"]}"'
+            f'-buildTarget "{config["BUILD_TARGET"]}" '
+            f'-output "{config["BUILD_PATH"]}"'
         )
         log.info(f"'{config["REPO_PATH"]}' Starting Unity build...")
         subprocess.run(unity_command, shell=True, check=True)
         log.info(f"'{config["REPO_PATH"]}' Unity build completed successfully.")
 
         # # Upload build to Itch.io using Butler
-        log.info(f"'{config["REPO_PATH"]}' Uploading build to Itch.io...")
-        subprocess.run([
-            BUTLER_EXECUTABLE,
-            'push',
-            config["WEBGL_BUILD_PATH"],
-            config["ITCH_PROJECT"]
-        ], check=True)
-        log.info(f"'{config["REPO_PATH"]}' Build uploaded to Itch.io successfully.")
+        if config.get("UPLOAD", False):
+            log.info(f"'{config["REPO_PATH"]}' Uploading build to Itch.io...")
+            subprocess.run([
+                BUTLER_EXECUTABLE,
+                'push',
+                config["BUILD_PATH"],
+                config["ITCH_PROJECT"]
+            ], check=True)
+            log.info(f"'{config["REPO_PATH"]}' Build uploaded to Itch.io successfully.")
+
+        log.info(f"'{config["REPO_PATH"]}' Build done.")
 
     except subprocess.CalledProcessError as e:
         log.error(f"'{config["REPO_PATH"]}' Unity build or upload failed: {e}")
@@ -141,7 +144,7 @@ def ensure_build_path_exists(path):
         os.makedirs(path)
 
 def record_init_commit_hash(config, log):
-    ensure_build_path_exists(config["WEBGL_BUILD_PATH"])
+    ensure_build_path_exists(config["BUILD_PATH"])
     commit_hash = get_latest_commit_hash(config["REPO_PATH"], log)
     if commit_hash:
         log.info(f"'{config["REPO_PATH"]}' Initial commit hash: {commit_hash}")
