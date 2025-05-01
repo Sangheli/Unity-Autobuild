@@ -23,6 +23,17 @@ CHECK_INTERVAL = 60  # Time in seconds to wait before checking for new commits
 CONFIGS = [
     {
         "BRANCH": 'origin/main',
+        "REPO_PATH": 'C:\\_Work\\krutoblin',
+        "ITCH_PROJECT": 'sangheli/krutoblin:webgl',
+        "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.1.0f1\\Editor\\Unity.exe"',
+        "BUILD_PATH": 'C:\\_Work\\krutoblin\\webgl_build',
+        "UNITY_BUILD_METHOD": "WebGLBuilder.Build",
+        "BUILD_TARGET": "WebGL",
+        "UPLOAD": True,
+        "FORCE": True,
+    },
+    {
+        "BRANCH": 'origin/main',
         "REPO_PATH": 'C:\\_Work\\RedBall',
         "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.1.0f1\\Editor\\Unity.exe"',
         "BUILD_PATH": 'C:\\_Work\\RedBall\\androidBuild',
@@ -40,6 +51,7 @@ CONFIGS = [
         "UNITY_BUILD_METHOD": "WebGLBuilder.Build",
         "BUILD_TARGET": "WebGL",
         "FORCE": True,
+        "UPLOAD": True,
     },
     {
         "BRANCH": 'origin/update3',
@@ -50,6 +62,7 @@ CONFIGS = [
         "UNITY_BUILD_METHOD": "WebGLBuilder.Build",
         "BUILD_TARGET": "WebGL",
         "FORCE": True,
+        "UPLOAD": True,
     },
     {
         "BRANCH": 'origin/stachka2025',
@@ -60,6 +73,7 @@ CONFIGS = [
         "UNITY_BUILD_METHOD": "WebGLBuilder.Build",
         "BUILD_TARGET": "WebGL",
         "FORCE": False,
+        "UPLOAD": True,
     },
     {
         "BRANCH": 'origin/main',
@@ -69,7 +83,8 @@ CONFIGS = [
         "BUILD_PATH": 'C:\\_Work\\sibjam2025-web\\webgl_build',
         "UNITY_BUILD_METHOD": "WebGLBuilder.Build",
         "BUILD_TARGET": "WebGL",
-        "FORCE": False,
+        "FORCE": True,
+        "UPLOAD": True,
     },
 ]
 
