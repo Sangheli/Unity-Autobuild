@@ -78,7 +78,7 @@ CONFIGS = [
     {
         "BRANCH": 'origin/main',
         "REPO_PATH": 'C:\\_Work\\sibjam2025-web',
-        "ITCH_PROJECT": 'sangheli/sibjam2025:webgl',
+        "ITCH_PROJECT": 'sangheli/towerascend:webgl',
         "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.1.0f1\\Editor\\Unity.exe"',
         "BUILD_PATH": 'C:\\_Work\\sibjam2025-web\\webgl_build',
         "UNITY_BUILD_METHOD": "WebGLBuilder.Build",
