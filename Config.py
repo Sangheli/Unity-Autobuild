@@ -65,4 +65,15 @@ CONFIGS = [
         "FORCE": True,
         "UPLOAD": True,
     },
+    {
+        "BRANCH": 'origin/main',
+        "REPO_PATH": 'C:\\_Work\\ZombieHealer',
+        "ITCH_PROJECT": 'sangheli/zombiehealer:webgl',
+        "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.2.0a10\\Editor\\Unity.exe"',
+        "BUILD_PATH": 'C:\\_Work\\ZombieHealer\\webgl_build',
+        "UNITY_BUILD_METHOD": "WebGLBuilder.Build",
+        "BUILD_TARGET": "WebGL",
+        "FORCE": True,
+        "UPLOAD": True,
+    },
 ]
