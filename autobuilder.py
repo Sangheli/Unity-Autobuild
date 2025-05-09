@@ -12,81 +12,14 @@ from git import Repo
 from git.exc import InvalidGitRepositoryError
 from io import StringIO
 
+import Config
+
 log_buffers = {}  # repo_path -> StringIO
 
 BUTLER_EXECUTABLE = './butler'  # Path to the butler executable (assuming you're running the script from the butler directory)
                                 # you can read about butler here https://itch.io/docs/butler/login.html
 
 CHECK_INTERVAL = 60  # Time in seconds to wait before checking for new commits
-
-# List of project configurations
-CONFIGS = [
-    {
-        "BRANCH": 'origin/main',
-        "REPO_PATH": 'C:\\_Work\\krutoblin',
-        "ITCH_PROJECT": 'sangheli/krutoblin:webgl',
-        "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.1.0f1\\Editor\\Unity.exe"',
-        "BUILD_PATH": 'C:\\_Work\\krutoblin\\webgl_build',
-        "UNITY_BUILD_METHOD": "WebGLBuilder.Build",
-        "BUILD_TARGET": "WebGL",
-        "UPLOAD": True,
-        "FORCE": True,
-    },
-    {
-        "BRANCH": 'origin/main',
-        "REPO_PATH": 'C:\\_Work\\RedBall',
-        "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.1.0f1\\Editor\\Unity.exe"',
-        "BUILD_PATH": 'C:\\_Work\\RedBall\\androidBuild',
-        "UNITY_BUILD_METHOD": "AndroidBuilder.Build",
-        "BUILD_TARGET": "Android",
-        "FORCE": True,
-        "UPLOAD":False,
-    },
-    {
-        "BRANCH": 'origin/main',
-        "REPO_PATH": 'C:\\_Work\\PaperShooter',
-        "ITCH_PROJECT": 'sangheli/papershooter:webgl',
-        "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.1.0f1\\Editor\\Unity.exe"',
-        "BUILD_PATH": 'C:\\_Work\\PaperShooter\\webgl_build',
-        "UNITY_BUILD_METHOD": "WebGLBuilder.Build",
-        "BUILD_TARGET": "WebGL",
-        "FORCE": True,
-        "UPLOAD": True,
-    },
-    {
-        "BRANCH": 'origin/update3',
-        "REPO_PATH": 'C:\\_Work\\HellDigger-Web',
-        "ITCH_PROJECT": 'sangheli/ld57helldiggeridle:webgl',
-        "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.1.0f1\\Editor\\Unity.exe"',
-        "BUILD_PATH": 'C:\\_Work\\HellDigger-Web\\webgl_build',
-        "UNITY_BUILD_METHOD": "WebGLBuilder.Build",
-        "BUILD_TARGET": "WebGL",
-        "FORCE": True,
-        "UPLOAD": True,
-    },
-    {
-        "BRANCH": 'origin/stachka2025',
-        "REPO_PATH": 'C:\\_Work\\minitank-web',
-        "ITCH_PROJECT": 'sangheli/minitankdesertstrikedemo1:webgl',
-        "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.1.0f1\\Editor\\Unity.exe"',
-        "BUILD_PATH": 'C:\\_Work\\minitank-web\\webgl_build',
-        "UNITY_BUILD_METHOD": "WebGLBuilder.Build",
-        "BUILD_TARGET": "WebGL",
-        "FORCE": False,
-        "UPLOAD": True,
-    },
-    {
-        "BRANCH": 'origin/main',
-        "REPO_PATH": 'C:\\_Work\\sibjam2025-web',
-        "ITCH_PROJECT": 'sangheli/towerascend:webgl',
-        "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.1.0f1\\Editor\\Unity.exe"',
-        "BUILD_PATH": 'C:\\_Work\\sibjam2025-web\\webgl_build',
-        "UNITY_BUILD_METHOD": "WebGLBuilder.Build",
-        "BUILD_TARGET": "WebGL",
-        "FORCE": True,
-        "UPLOAD": True,
-    },
-]
 
 # Setup per-project loggers
 def setup_logger(repo_path):
@@ -199,7 +132,7 @@ def main():
     last_commit_hashes = {}
 
     loggers = {}
-    for config in CONFIGS:
+    for config in Config.CONFIGS:
         log = setup_logger(config["REPO_PATH"])
         loggers[config["REPO_PATH"]] = log
         initial_hash = record_init_commit_hash(config, log)
@@ -211,7 +144,7 @@ def main():
     forced_built = set()
 
     while True:
-        for config in CONFIGS:
+        for config in Config.CONFIGS:
             log = loggers[config["REPO_PATH"]]
             if config["REPO_PATH"] not in last_commit_hashes:
                 continue
