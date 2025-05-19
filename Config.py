@@ -90,7 +90,7 @@ CONFIGS = [
     {
         "BRANCH": 'origin/main',
         "REPO_PATH": 'C:\\_Work\\wasdjam25',
-        "ITCH_PROJECT": 'sangheli/pc-battle:webgl',
+        "ITCH_PROJECT": 'sangheli/mainframe-fantasy:webgl',
         "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.0.34f1\\Editor\\Unity.exe"',
         "BUILD_PATH": 'C:\\_Work\\wasdjam25\\webgl_build',
         "UNITY_BUILD_METHOD": "WebGLBuilder.Build",
