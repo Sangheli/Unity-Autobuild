@@ -11,7 +11,7 @@ import colorlog
 from git import Repo
 from git.exc import InvalidGitRepositoryError
 from io import StringIO
-
+import shutil
 import Config
 
 log_buffers = {}  # repo_path -> StringIO
@@ -20,6 +20,22 @@ BUTLER_EXECUTABLE = './butler'  # Path to the butler executable (assuming you're
                                 # you can read about butler here https://itch.io/docs/butler/login.html
 
 CHECK_INTERVAL = 60  # Time in seconds to wait before checking for new commits
+
+
+def zip_build_folder(build_folder, log):
+    zip_path = f"{build_folder}.zip"
+    log.info(f"Creating zip archive: {zip_path}")
+
+    # Удаляем старый архив, если он уже есть
+    if os.path.exists(zip_path):
+        os.remove(zip_path)
+
+    # Архивируем (make_archive возвращает путь к архиву)
+    shutil.make_archive(build_folder, 'zip', build_folder)
+
+    log.info(f"Zip archive created: {zip_path}")
+    return zip_path
+
 
 # Setup per-project loggers
 def setup_logger(repo_path):
@@ -87,7 +103,7 @@ def build_unity_project(config, log):
             f'{config["UNITY_EXECUTABLE"]} -batchmode -nographics -quit '
             f'-projectPath "{config["REPO_PATH"]}" '
             f'-executeMethod {config["UNITY_BUILD_METHOD"]} '
-            f'-buildTarget "{config["BUILD_TARGET"]}" '
+            f'-buildTarget {config["BUILD_TARGET"]} '
             f'-output "{config["BUILD_PATH"]}"'
         )
         log.info(f"'{config["REPO_PATH"]}' Starting Unity build...")
@@ -95,12 +111,16 @@ def build_unity_project(config, log):
         log.info(f"'{config["REPO_PATH"]}' Unity build completed successfully.")
 
         # # Upload build to Itch.io using Butler
+        build_path_to_push = config["BUILD_PATH"]
+        if config.get("ZIP_BEFORE_UPLOAD", False):
+            build_path_to_push = zip_build_folder(config["BUILD_PATH"], log)
+
         if config.get("UPLOAD", False):
             log.info(f"'{config["REPO_PATH"]}' Uploading build to Itch.io...")
             subprocess.run([
                 BUTLER_EXECUTABLE,
                 'push',
-                config["BUILD_PATH"],
+                build_path_to_push,
                 config["ITCH_PROJECT"]
             ], check=True)
             log.info(f"'{config["REPO_PATH"]}' Build uploaded to Itch.io successfully.")
@@ -128,52 +148,87 @@ def check_butler_login():
         print("Butler is not logged in. Run `butler login` manually.")
         exit(1)
 
-def main():
+
+def build_project_always(config, log):
+    log.info(f"'{config['REPO_PATH']}' NO_GIT flag is set. Building project directly.")
+    build_unity_project(config, log)
+
+
+def build_project_on_commit_change(config, log, last_commit_hashes, forced_built):
+    repo_path = config["REPO_PATH"]
+
+    log.info(f"'{repo_path}' Checking for new commits...")
+
+    try:
+        pull_latest_changes(repo_path, config["BRANCH"], log)
+        current_commit_hash = get_latest_commit_hash(repo_path, log)
+        if current_commit_hash is None:
+            log.warning(f"'{repo_path}' Skipping project due to invalid git repository.")
+            return
+
+        should_force = config.get("FORCE", False) and repo_path not in forced_built
+
+        if should_force:
+            log.info(f"'{repo_path}' Forced build triggered.")
+            build_unity_project(config, log)
+            last_commit_hashes[repo_path] = current_commit_hash
+            forced_built.add(repo_path)
+        elif current_commit_hash != last_commit_hashes[repo_path]:
+            log.info(f"'{repo_path}' New commit detected: {current_commit_hash}")
+            last_commit_hashes[repo_path] = current_commit_hash
+            build_unity_project(config, log)
+        else:
+            log.info(f"'{repo_path}' No new commits found.")
+
+    except Exception as e:
+        log.error(f"Error while processing project: {e}")
+
+
+def init_loggers_and_hashes():
+    loggers = {}
     last_commit_hashes = {}
 
-    loggers = {}
     for config in Config.CONFIGS:
-        log = setup_logger(config["REPO_PATH"])
-        loggers[config["REPO_PATH"]] = log
+        repo_path = config["REPO_PATH"]
+        log = setup_logger(repo_path)
+        loggers[repo_path] = log
+
+        if config.get("NO_GIT", False):
+            log.info(f"'{repo_path}' NO_GIT flag is enabled. Will only build, skipping git.")
+            continue
+
         initial_hash = record_init_commit_hash(config, log)
         if initial_hash is None:
-            log.warning(f"'{config["REPO_PATH"]}' Skipping project due to invalid git repository.")
+            log.warning(f"'{repo_path}' Skipping project due to invalid git repository.")
             continue
-        last_commit_hashes[config["REPO_PATH"]] = initial_hash
 
+        last_commit_hashes[repo_path] = initial_hash
+
+    return loggers, last_commit_hashes
+
+
+def main():
+    loggers, last_commit_hashes = init_loggers_and_hashes()
     forced_built = set()
 
+    # Отдельно собрать NO_GIT-конфиги и удалить их из общего списка
+    no_git_configs = [config for config in Config.CONFIGS if config.get("NO_GIT", False)]
+    git_configs = [config for config in Config.CONFIGS if not config.get("NO_GIT", False)]
+
+    # Сначала выполнить билд для NO_GIT-конфигов
+    for config in no_git_configs:
+        repo_path = config["REPO_PATH"]
+        log = loggers[repo_path]
+        build_project_always(config, log)
+
+    # Теперь работать только с git-конфигами в цикле
     while True:
-        for config in Config.CONFIGS:
-            log = loggers[config["REPO_PATH"]]
-            if config["REPO_PATH"] not in last_commit_hashes:
+        for config in git_configs:
+            repo_path = config["REPO_PATH"]
+            log = loggers[repo_path]
+            if repo_path not in last_commit_hashes:
                 continue
-
-            log.info(f"'{config["REPO_PATH"]}' Checking for new commits...")
-
-            try:
-                pull_latest_changes(config["REPO_PATH"], config["BRANCH"], log)
-                current_commit_hash = get_latest_commit_hash(config["REPO_PATH"], log)
-                if current_commit_hash is None:
-                    log.warning(f"'{config["REPO_PATH"]}' Skipping project due to invalid git repository.")
-                    continue
-
-                should_force = config.get("FORCE", False) and config["REPO_PATH"] not in forced_built
-
-                if should_force:
-                    log.info(f"'{config["REPO_PATH"]}' Forced build triggered.")
-                    build_unity_project(config, log)
-                    last_commit_hashes[config["REPO_PATH"]] = current_commit_hash
-                    forced_built.add(config["REPO_PATH"])
-                elif current_commit_hash != last_commit_hashes[config["REPO_PATH"]]:
-                    log.info(f"'{config["REPO_PATH"]}' New commit detected: {current_commit_hash}")
-                    last_commit_hashes[config["REPO_PATH"]] = current_commit_hash
-                    build_unity_project(config, log)
-                else:
-                    log.info(f"'{config["REPO_PATH"]}' No new commits found.")
-
-            except Exception as e:
-                log.error(f"Error while processing project: {e}")
+            build_project_on_commit_change(config, log, last_commit_hashes, forced_built)
 
         time.sleep(CHECK_INTERVAL)
 

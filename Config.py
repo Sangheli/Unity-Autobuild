@@ -98,4 +98,17 @@ CONFIGS = [
         "FORCE": True,
         "UPLOAD": True,
     },
+    {
+        "BRANCH": 'origin/main',
+        "REPO_PATH": 'C:\\_Work\\circle_idle',
+        "ITCH_PROJECT": 'sangheli/circleidle:win',
+        "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.2.0b3\\Editor\\Unity.exe"',
+        "BUILD_PATH": 'C:\\_Work\\circle_idle\\pc_build',
+        "UNITY_BUILD_METHOD": "WinBuilder.Build",
+        "BUILD_TARGET": "Win64",
+        "FORCE": True,
+        "UPLOAD": True,
+        "NO_GIT": True,  # <<< Добавь сюда, если хочешь выключить работу с гитом,
+        "ZIP_BEFORE_UPLOAD": True, #for win builds
+    },
 ]
