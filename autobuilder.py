@@ -96,7 +96,7 @@ def setup_logger(repo_path):
     )
 
     # File handler
-    log_file = f'{project_name}.log'
+    log_file = os.path.join("log", f'{project_name}.log')
     fh = handlers.RotatingFileHandler(log_file, maxBytes=5_000_000, backupCount=2)
     fh.setFormatter(formatter)
 
@@ -275,8 +275,12 @@ def init_loggers_and_hashes():
 
     return loggers, last_commit_hashes
 
+def ensure_log_folder_exists():
+    if not os.path.exists("log"):
+        os.makedirs("log")
 
 def main():
+    ensure_log_folder_exists()
     loggers, last_commit_hashes = init_loggers_and_hashes()
     forced_built = set()
 
