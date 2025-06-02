@@ -134,6 +134,19 @@ def pull_latest_changes(repo_path, branch, log):
     except Exception as e:
         log.warning(f"'{repo_path}' Failed to pull latest changes: {e}")
 
+def get_build_path_to_push(config, log):
+    build_path_to_push = config["BUILD_PATH"]
+    if config["BUILD_TARGET"].lower() == "android":
+        apk_files = [f for f in os.listdir(build_path_to_push) if f.endswith(".apk")]
+        if not apk_files:
+            log.warning(f"'{config["REPO_PATH"]}' No APK files found in build path: {build_path_to_push}")
+            return
+        # Для простоты выгружаем первый найденный APK (или можно все перебрать в цикле)
+        build_path_to_push = os.path.join(build_path_to_push, apk_files[0])
+        log.info(f"'{config["REPO_PATH"]}' Found APK to upload: {build_path_to_push}")
+
+    return build_path_to_push
+
 def build_unity_project(config, log):
     """Triggers a headless WebGL build for the Unity project."""
     try:
@@ -157,9 +170,9 @@ def build_unity_project(config, log):
         else:
             history_file = None
 
-        build_path_to_push = config["BUILD_PATH"]
+        build_path_to_push = get_build_path_to_push(config, log)
         if config.get("ZIP_BEFORE_UPLOAD", False):
-            build_path_to_push = zip_build_folder(config["BUILD_PATH"], log, config.get("ZIP_METHOD", "zip"))
+            build_path_to_push = zip_build_folder(build_path_to_push, log, config.get("ZIP_METHOD", "zip"))
 
         if config.get("UPLOAD", False):
             log.info(f"'{config["REPO_PATH"]}' Uploading build to Itch.io...")

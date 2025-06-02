@@ -142,7 +142,7 @@ CONFIGS = [
         "REPO_PATH": 'C:\\_Work\\circle_idle',
         "ITCH_PROJECT": 'sangheli/circleidle:android',
         "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.2.0b3\\Editor\\Unity.exe"',
-        "BUILD_PATH": 'C:\\_Work\\circle_idle\\androidBuild\\game.apk',
+        "BUILD_PATH": 'C:\\_Work\\circle_idle\\androidBuild',
         "UNITY_BUILD_METHOD": "AndroidBuilder.Build",
         "BUILD_TARGET": "Android",
         "FORCE": True,
