@@ -34,10 +34,10 @@ CONFIGS = [
     },
     {
         "BRANCH": 'origin/update3',
-        "REPO_PATH": 'C:\\_Work\\HellDigger-Web',
+        "REPO_PATH": 'C:\\_Work\\hellDigger',
         "ITCH_PROJECT": 'sangheli/ld57helldiggeridle:webgl',
         "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.2.0a10\\Editor\\Unity.exe"',
-        "BUILD_PATH": 'C:\\_Work\\HellDigger-Web\\webgl_build',
+        "BUILD_PATH": 'C:\\_Work\\hellDigger\\webgl_build',
         "UNITY_BUILD_METHOD": "WebGLBuilder.Build",
         "BUILD_TARGET": "WebGL",
         "FORCE": True,
@@ -110,5 +110,50 @@ CONFIGS = [
         "UPLOAD": True,
         "NO_GIT": True,  # <<< Добавь сюда, если хочешь выключить работу с гитом,
         "ZIP_BEFORE_UPLOAD": True, #for win builds
+    },
+    {
+        "BRANCH": 'origin/main',
+        "REPO_PATH": 'C:\\_Work\\circle_idle',
+        "ITCH_PROJECT": 'sangheli/circleidle:linux',
+        "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.2.0b3\\Editor\\Unity.exe"',
+        "BUILD_PATH": 'C:\\_Work\\circle_idle\\linux_build',
+        "UNITY_BUILD_METHOD": "LinuxBuilder.Build",
+        "BUILD_TARGET": "Linux64",
+        "FORCE": True,
+        "UPLOAD": True,
+        "NO_GIT": True,  # <<< Добавь сюда, если хочешь выключить работу с гитом,
+        "ZIP_BEFORE_UPLOAD": True,  # for win builds
+    },
+    {
+        "BRANCH": 'origin/main',
+        "REPO_PATH": 'C:\\_Work\\circle_idle',
+        "ITCH_PROJECT": 'sangheli/circleidle:mac',
+        "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.2.0b3\\Editor\\Unity.exe"',
+        "BUILD_PATH": 'C:\\_Work\\circle_idle\\mac_build',
+        "UNITY_BUILD_METHOD": "MacBuilder.Build",
+        "BUILD_TARGET": "OSX",
+        "FORCE": True,
+        "UPLOAD": True,
+        "NO_GIT": True,  # <<< Добавь сюда, если хочешь выключить работу с гитом,
+        "ZIP_BEFORE_UPLOAD": True,  # for win builds
+    },
+    {
+        "BRANCH": 'origin/main',
+        "REPO_PATH": 'C:\\_Work\\circle_idle',
+        "ITCH_PROJECT": 'sangheli/circleidle:android',
+        "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.2.0b3\\Editor\\Unity.exe"',
+        "BUILD_PATH": 'C:\\_Work\\circle_idle\\androidBuild\\game.apk',
+        "UNITY_BUILD_METHOD": "AndroidBuilder.Build",
+        "BUILD_TARGET": "Android",
+        "FORCE": True,
+        "UPLOAD": True,
+        "NO_GIT": True,  # <<< Добавь сюда, если хочешь выключить работу с гитом,
+        "ZIP_BEFORE_UPLOAD": False,  # for win builds
+        "UPLOAD_TELEGRAM": False,
+        "UPLOAD_DROPBOX": False,
+        "TELEGRAM_BOT_TOKEN": "",
+        "TELEGRAM_CHAT_ID": "",
+        "DROPBOX_PATH": "C:\\Dropbox\\Public",
+        "ZIP_METHOD": "7z",  # zip или 7z
     },
 ]

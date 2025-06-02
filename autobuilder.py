@@ -8,6 +8,7 @@ import time
 import logging
 from logging import handlers
 import colorlog
+import requests
 from git import Repo
 from git.exc import InvalidGitRepositoryError
 from io import StringIO
@@ -22,19 +23,58 @@ BUTLER_EXECUTABLE = './butler'  # Path to the butler executable (assuming you're
 CHECK_INTERVAL = 60  # Time in seconds to wait before checking for new commits
 
 
-def zip_build_folder(build_folder, log):
-    zip_path = f"{build_folder}.zip"
-    log.info(f"Creating zip archive: {zip_path}")
+def zip_build_folder(build_folder, log, method="zip"):
+    zip_path = f"{build_folder}.{'7z' if method == '7z' else 'zip'}"
+    log.info(f"Creating {method} archive: {zip_path}")
 
     # Удаляем старый архив, если он уже есть
     if os.path.exists(zip_path):
         os.remove(zip_path)
 
     # Архивируем (make_archive возвращает путь к архиву)
-    shutil.make_archive(build_folder, 'zip', build_folder)
+    if method == "zip":
+        shutil.make_archive(build_folder, 'zip', build_folder)
+    else:
+        # Используем 7z (требуется установленный 7z)
+        path_7z = 'C:\\Program Files\\7-Zip\\'
+        current_dir = os.getcwd()
+        os.chdir(path_7z)
+        os.system(f'7z.exe a {zip_path} {build_folder} -mx9 -v49m')
+        os.chdir(current_dir)
 
-    log.info(f"Zip archive created: {zip_path}")
+    log.info(f"{method.upper()} archive created: {zip_path}")
     return zip_path
+
+
+def upload_to_telegram(file_path, token, chat_id, log):
+    url = f'https://api.telegram.org/bot{token}/sendDocument'
+    with open(file_path, 'rb') as file:
+        files = {'document': file}
+        params = {'chat_id': chat_id}
+        response = requests.post(url, params=params, files=files)
+        log.info(f"Uploaded to Telegram: {file_path} | Response: {response.json()}")
+
+
+def copy_to_dropbox(file_path, dropbox_path, log):
+    if not os.path.exists(dropbox_path):
+        os.makedirs(dropbox_path)
+    shutil.copy(file_path, dropbox_path)
+    log.info(f"Copied to Dropbox: {file_path}")
+
+
+def extract_git_history(repo_path, hash, log):
+    os.chdir(repo_path)
+    full_log = subprocess.getoutput('git log --oneline HEAD').split('\n')
+    extracted = []
+    for x in full_log:
+        extracted.append("* " + x[9:])
+        if hash in x:
+            extracted.append("\n[Old history]\n")
+    log_file = os.path.join(repo_path, f'patchnote_{time.strftime("%Y_%m_%d_%H_%M_%S")}.txt')
+    with open(log_file, 'w') as f:
+        f.write("\n".join(extracted))
+    log.info(f"Git history saved: {log_file}")
+    return log_file
 
 
 # Setup per-project loggers
@@ -111,9 +151,15 @@ def build_unity_project(config, log):
         log.info(f"'{config["REPO_PATH"]}' Unity build completed successfully.")
 
         # # Upload build to Itch.io using Butler
+        if not config.get("NO_GIT", False):
+            hash = get_latest_commit_hash(config["REPO_PATH"], log)
+            history_file = extract_git_history(config["REPO_PATH"], hash, log)
+        else:
+            history_file = None
+
         build_path_to_push = config["BUILD_PATH"]
         if config.get("ZIP_BEFORE_UPLOAD", False):
-            build_path_to_push = zip_build_folder(config["BUILD_PATH"], log)
+            build_path_to_push = zip_build_folder(config["BUILD_PATH"], log, config.get("ZIP_METHOD", "zip"))
 
         if config.get("UPLOAD", False):
             log.info(f"'{config["REPO_PATH"]}' Uploading build to Itch.io...")
@@ -124,6 +170,16 @@ def build_unity_project(config, log):
                 config["ITCH_PROJECT"]
             ], check=True)
             log.info(f"'{config["REPO_PATH"]}' Build uploaded to Itch.io successfully.")
+
+        if config.get("UPLOAD_TELEGRAM", False):
+            upload_to_telegram(build_path_to_push, config["TELEGRAM_BOT_TOKEN"], config["TELEGRAM_CHAT_ID"], log)
+            if history_file:
+                upload_to_telegram(history_file, config["TELEGRAM_BOT_TOKEN"], config["TELEGRAM_CHAT_ID"], log)
+
+        if config.get("UPLOAD_DROPBOX", False):
+            copy_to_dropbox(build_path_to_push, config["DROPBOX_PATH"], log)
+            if history_file:
+                copy_to_dropbox(history_file, config["DROPBOX_PATH"], log)
 
         log.info(f"'{config["REPO_PATH"]}' Build done.")
 
