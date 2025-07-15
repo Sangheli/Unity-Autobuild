@@ -147,53 +147,68 @@ def get_build_path_to_push(config, log):
 
     return build_path_to_push
 
-def build_unity_project(config, log):
-    """Triggers a headless WebGL build for the Unity project."""
-    try:
-        # Build the single command string as you would run it in the terminal
-        unity_command = (
+def upload_itch(config,log, build_path_to_push):
+    if not config.get("UPLOAD", False):
+        return
+
+    log.info(f"'{config["REPO_PATH"]}' Uploading build to Itch.io...")
+    subprocess.run([
+        BUTLER_EXECUTABLE,
+        'push',
+        build_path_to_push,
+        config["ITCH_PROJECT"]
+    ], check=True)
+    log.info(f"'{config["REPO_PATH"]}' Build uploaded to Itch.io successfully.")
+
+def upload_tg(config,log, build_path_to_push, history_file):
+    if config.get("UPLOAD_TELEGRAM", False):
+        upload_to_telegram(build_path_to_push, config["TELEGRAM_BOT_TOKEN"], config["TELEGRAM_CHAT_ID"], log)
+        if history_file:
+            upload_to_telegram(history_file, config["TELEGRAM_BOT_TOKEN"], config["TELEGRAM_CHAT_ID"], log)
+
+def upload_dropbox(config,log, build_path_to_push, history_file):
+    if config.get("UPLOAD_DROPBOX", False):
+        copy_to_dropbox(build_path_to_push, config["DROPBOX_PATH"], log)
+        if history_file:
+            copy_to_dropbox(history_file, config["DROPBOX_PATH"], log)
+
+def try_zip(config,log):
+    build_path_to_push = get_build_path_to_push(config, log)
+    if config.get("ZIP_BEFORE_UPLOAD", False):
+        build_path_to_push = zip_build_folder(build_path_to_push, log, config.get("ZIP_METHOD", "zip"))
+
+    return build_path_to_push
+
+def get_history_file(config, log):
+    if config.get("NO_GIT", False):
+        return None
+
+    hash = get_latest_commit_hash(config["REPO_PATH"], log)
+    return extract_git_history(config["REPO_PATH"], hash, log)
+
+def get_unity_build_command(config):
+    # Build the single command string as you would run it in the terminal
+    return (
         # f'sudo '
-            f'{config["UNITY_EXECUTABLE"]} -batchmode -nographics -quit '
-            f'-projectPath "{config["REPO_PATH"]}" '
-            f'-executeMethod {config["UNITY_BUILD_METHOD"]} '
-            f'-buildTarget {config["BUILD_TARGET"]} '
-            f'-output "{config["BUILD_PATH"]}"'
-        )
+        f'{config["UNITY_EXECUTABLE"]} -batchmode -nographics -quit '
+        f'-projectPath "{config["REPO_PATH"]}" '
+        f'-executeMethod Builder.Build '
+        f'-buildTarget {config["BUILD_TARGET"]} '
+        f'-output "{config["BUILD_PATH"]}"'
+    )
+
+
+def build_unity_project(config, log):
+    try:
         log.info(f"'{config["REPO_PATH"]}' Starting Unity build...")
-        subprocess.run(unity_command, shell=True, check=True)
+        subprocess.run(get_unity_build_command(config), shell=True, check=True)
         log.info(f"'{config["REPO_PATH"]}' Unity build completed successfully.")
 
-        # # Upload build to Itch.io using Butler
-        if not config.get("NO_GIT", False):
-            hash = get_latest_commit_hash(config["REPO_PATH"], log)
-            history_file = extract_git_history(config["REPO_PATH"], hash, log)
-        else:
-            history_file = None
-
-        build_path_to_push = get_build_path_to_push(config, log)
-        if config.get("ZIP_BEFORE_UPLOAD", False):
-            build_path_to_push = zip_build_folder(build_path_to_push, log, config.get("ZIP_METHOD", "zip"))
-
-        if config.get("UPLOAD", False):
-            log.info(f"'{config["REPO_PATH"]}' Uploading build to Itch.io...")
-            subprocess.run([
-                BUTLER_EXECUTABLE,
-                'push',
-                build_path_to_push,
-                config["ITCH_PROJECT"]
-            ], check=True)
-            log.info(f"'{config["REPO_PATH"]}' Build uploaded to Itch.io successfully.")
-
-        if config.get("UPLOAD_TELEGRAM", False):
-            upload_to_telegram(build_path_to_push, config["TELEGRAM_BOT_TOKEN"], config["TELEGRAM_CHAT_ID"], log)
-            if history_file:
-                upload_to_telegram(history_file, config["TELEGRAM_BOT_TOKEN"], config["TELEGRAM_CHAT_ID"], log)
-
-        if config.get("UPLOAD_DROPBOX", False):
-            copy_to_dropbox(build_path_to_push, config["DROPBOX_PATH"], log)
-            if history_file:
-                copy_to_dropbox(history_file, config["DROPBOX_PATH"], log)
-
+        history_file = get_history_file(config, log)
+        build_path_to_push = try_zip(config, log)
+        upload_itch(config, log, build_path_to_push)
+        upload_tg(config, log, build_path_to_push, history_file)
+        upload_dropbox(config, log, build_path_to_push, history_file)
         log.info(f"'{config["REPO_PATH"]}' Build done.")
 
     except subprocess.CalledProcessError as e:
@@ -279,14 +294,9 @@ def ensure_log_folder_exists():
     if not os.path.exists("log"):
         os.makedirs("log")
 
-def main():
-    ensure_log_folder_exists()
-    loggers, last_commit_hashes = init_loggers_and_hashes()
-    forced_built = set()
-
+def execute_no_git(loggers):
     # Отдельно собрать NO_GIT-конфиги и удалить их из общего списка
     no_git_configs = [config for config in Config.CONFIGS if config.get("NO_GIT", False)]
-    git_configs = [config for config in Config.CONFIGS if not config.get("NO_GIT", False)]
 
     # Сначала выполнить билд для NO_GIT-конфигов
     for config in no_git_configs:
@@ -294,6 +304,15 @@ def main():
         log = loggers[repo_path]
         build_project_always(config, log)
 
+
+def main():
+    ensure_log_folder_exists()
+    loggers, last_commit_hashes = init_loggers_and_hashes()
+    forced_built = set()
+
+    execute_no_git(loggers)
+
+    git_configs = [config for config in Config.CONFIGS if not config.get("NO_GIT", False)]
     # Теперь работать только с git-конфигами в цикле
     while True:
         for config in git_configs:
@@ -307,29 +326,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-#
-# you will also need to implement a build script inside of unity, you can start with this one
-#
-# public class WebGLBuilder
-# {
-#    [MenuItem("Build/Build WebGL")]
-#    public static void Build()
-#    {
-#        string[] scenes =
-#        {
-#            "Assets/main.unity",
-#        };
-#
-#        PlayerSettings.defaultWebScreenWidth = 1340;
-#        PlayerSettings.defaultWebScreenHeight = 710;
-#
-#        BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
-#        buildPlayerOptions.scenes = scenes;
-#        buildPlayerOptions.locationPathName = "webgl_build";
-#        buildPlayerOptions.target = BuildTarget.WebGL;
-#        buildPlayerOptions.options = BuildOptions.None;
-#
-#        BuildPipeline.BuildPlayer(scenes, "webgl_build", BuildTarget.WebGL, BuildOptions.None);
-#    }
-# }
