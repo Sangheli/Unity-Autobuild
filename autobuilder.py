@@ -149,7 +149,7 @@ def get_build_path_to_push(config, env, log):
     return build_path_to_push
 
 def upload_itch(config, env,log, build_path_to_push):
-    if not env.get("UPLOAD", False):
+    if not env.get("UPLOAD_TO_ITCH", False):
         log.info("UPLOAD flag is False, skipping itch upload.")
         return
 
@@ -266,7 +266,7 @@ def build_project_on_commit_change(config,env, log, last_commit_hashes, forced_b
             log.warning(f"'{repo_path}' Skipping project due to invalid git repository.")
             return
 
-        should_force = env.get("FORCE", False) and repo_path not in forced_built
+        should_force = env.get("FORCE_BUILD_GIT", False) and repo_path not in forced_built
 
         if should_force:
             log.info(f"'{repo_path}' Forced build triggered.")
