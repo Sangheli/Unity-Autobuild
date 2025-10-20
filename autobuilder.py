@@ -13,7 +13,7 @@ from git import Repo
 from git.exc import InvalidGitRepositoryError
 from io import StringIO
 import shutil
-import Config
+import ConfigPayOrDie as Config
 
 log_buffers = {}  # repo_path -> StringIO
 
@@ -36,11 +36,11 @@ def zip_build_folder(build_folder, log, method="zip"):
         shutil.make_archive(build_folder, 'zip', build_folder)
     else:
         # Используем 7z (требуется установленный 7z)
-        path_7z = 'C:\\Program Files\\7-Zip\\'
-        current_dir = os.getcwd()
-        os.chdir(path_7z)
-        os.system(f'7z.exe a {zip_path} {build_folder} -mx9 -v49m')
-        os.chdir(current_dir)
+        seven = shutil.which('7z') or shutil.which('7za') or r'C:\Program Files\7-Zip\7z.exe'
+        if not seven or not os.path.exists(seven):
+            raise FileNotFoundError("7z executable not found. Install 7-Zip or put 7z in PATH.")
+        cmd = [seven, 'a', zip_path, build_folder, '-mx9', '-v49m']
+        subprocess.run(cmd, check=True)
 
     log.info(f"{method.upper()} archive created: {zip_path}")
     return zip_path
@@ -134,95 +134,111 @@ def pull_latest_changes(repo_path, branch, log):
     except Exception as e:
         log.warning(f"'{repo_path}' Failed to pull latest changes: {e}")
 
-def get_build_path_to_push(config, log):
-    build_path_to_push = config["BUILD_PATH"]
+def get_build_path_to_push(config, env, log):
+    build_path_to_push = os.path.join(str(env["REPO_PATH"]), str(config["BUILD_PATH"]))
+
     if config["BUILD_TARGET"].lower() == "android":
         apk_files = [f for f in os.listdir(build_path_to_push) if f.endswith(".apk")]
         if not apk_files:
-            log.warning(f"'{config["REPO_PATH"]}' No APK files found in build path: {build_path_to_push}")
+            log.warning(f"'{env['REPO_PATH']}' No APK files found in build path: {build_path_to_push}")
             return
         # Для простоты выгружаем первый найденный APK (или можно все перебрать в цикле)
         build_path_to_push = os.path.join(build_path_to_push, apk_files[0])
-        log.info(f"'{config["REPO_PATH"]}' Found APK to upload: {build_path_to_push}")
+        log.info(f"'{env['REPO_PATH']}' Found APK to upload: {build_path_to_push}")
 
     return build_path_to_push
 
-def upload_itch(config,log, build_path_to_push):
-    if not config.get("UPLOAD", False):
+def upload_itch(config, env,log, build_path_to_push):
+    if not env.get("UPLOAD", False):
+        log.info("UPLOAD flag is False, skipping itch upload.")
         return
 
-    log.info(f"'{config["REPO_PATH"]}' Uploading build to Itch.io...")
+    log.info(f"'{env['REPO_PATH']}' Uploading build to Itch.io...")
     subprocess.run([
         BUTLER_EXECUTABLE,
         'push',
         build_path_to_push,
-        config["ITCH_PROJECT"]
+        f"{env['ITCH_PROJECT']}:{config['ITCH_TARGET']}"
     ], check=True)
-    log.info(f"'{config["REPO_PATH"]}' Build uploaded to Itch.io successfully.")
+    log.info(f"'{env['REPO_PATH']}' Build uploaded to Itch.io successfully.")
 
-def upload_tg(config,log, build_path_to_push, history_file):
+def upload_tg(config,env,log, build_path_to_push, history_file):
     if config.get("UPLOAD_TELEGRAM", False):
-        upload_to_telegram(build_path_to_push, config["TELEGRAM_BOT_TOKEN"], config["TELEGRAM_CHAT_ID"], log)
+        upload_to_telegram(build_path_to_push, env.get("TELEGRAM_BOT_TOKEN", ""), env.get("TELEGRAM_CHAT_ID", ""), log)
         if history_file:
-            upload_to_telegram(history_file, config["TELEGRAM_BOT_TOKEN"], config["TELEGRAM_CHAT_ID"], log)
+            upload_to_telegram(history_file, env.get("TELEGRAM_BOT_TOKEN", ""), env.get("TELEGRAM_CHAT_ID", ""), log)
 
-def upload_dropbox(config,log, build_path_to_push, history_file):
+def upload_dropbox(config,env, log, build_path_to_push, history_file):
     if config.get("UPLOAD_DROPBOX", False):
-        copy_to_dropbox(build_path_to_push, config["DROPBOX_PATH"], log)
+        copy_to_dropbox(build_path_to_push, env.get("DROPBOX_PATH", ""), log)
         if history_file:
-            copy_to_dropbox(history_file, config["DROPBOX_PATH"], log)
+            copy_to_dropbox(history_file, env.get("DROPBOX_PATH", ""), log)
 
-def try_zip(config,log):
-    build_path_to_push = get_build_path_to_push(config, log)
+def try_zip(config,env, log):
+    build_path_to_push = get_build_path_to_push(config, env, log)
     if config.get("ZIP_BEFORE_UPLOAD", False):
-        build_path_to_push = zip_build_folder(build_path_to_push, log, config.get("ZIP_METHOD", "zip"))
+        try:
+            method = config.get("ZIP_METHOD", "zip")
+            build_path_to_push = zip_build_folder(build_path_to_push, log, method)
+        except Exception as e:
+            log.error(f"Failed to create archive: {e}")
+            return None
 
     return build_path_to_push
 
-def get_history_file(config, log):
+def get_history_file(config,env, log):
     if config.get("NO_GIT", False):
         return None
 
-    hash = get_latest_commit_hash(config["REPO_PATH"], log)
-    return extract_git_history(config["REPO_PATH"], hash, log)
+    hash = get_latest_commit_hash(env["REPO_PATH"], log)
+    return extract_git_history(env["REPO_PATH"], hash, log)
 
-def get_unity_build_command(config):
+def get_unity_build_command(config, env):
     # Build the single command string as you would run it in the terminal
     return (
         # f'sudo '
-        f'{config["UNITY_EXECUTABLE"]} -batchmode -nographics -quit '
-        f'-projectPath "{config["REPO_PATH"]}" '
+        f'{env["UNITY_EXECUTABLE"]} -batchmode -nographics -quit '
+        f'-projectPath "{env["REPO_PATH"]}" '
         f'-executeMethod Builder.Build '
         f'-buildTarget {config["BUILD_TARGET"]} '
-        f'-output "{config["BUILD_PATH"]}"'
+        f'-output "{f"{os.path.join(str(env["REPO_PATH"]), str(config["BUILD_PATH"]))}"}"'
     )
 
 
-def build_unity_project(config, log):
+def build_unity_project(config, env, log):
     try:
-        log.info(f"'{config["REPO_PATH"]}' Starting Unity build...")
-        subprocess.run(get_unity_build_command(config), shell=True, check=True)
-        log.info(f"'{config["REPO_PATH"]}' Unity build completed successfully.")
+        log.info(f"'{env['REPO_PATH']}' Starting Unity build...")
+        cmd = get_unity_build_command(config, env)
+        subprocess.run(cmd, shell=True, check=True)
+        log.info(f"'{env['REPO_PATH']}' Unity build completed successfully.")
 
-        history_file = get_history_file(config, log)
-        build_path_to_push = try_zip(config, log)
-        upload_itch(config, log, build_path_to_push)
-        upload_tg(config, log, build_path_to_push, history_file)
-        upload_dropbox(config, log, build_path_to_push, history_file)
-        log.info(f"'{config["REPO_PATH"]}' Build done.")
+        history_file = get_history_file(config, env, log)
+        build_path_to_push = try_zip(config, env, log)
+        if not build_path_to_push:
+            log.warning(f"'{env['REPO_PATH']}' Nothing to upload after build.")
+            return
+
+        upload_itch(config, env, log, build_path_to_push)
+        upload_tg(config, env, log, build_path_to_push, history_file)
+        upload_dropbox(config, env, log, build_path_to_push, history_file)
+        log.info(f"'{env['REPO_PATH']}' Build done.")
 
     except subprocess.CalledProcessError as e:
-        log.error(f"'{config["REPO_PATH"]}' Unity build or upload failed: {e}")
+        log.error(f"'{env['REPO_PATH']}' Unity build or upload failed: {e}")
+    except Exception as e:
+        log.exception(f"Unexpected error during build: {e}")
+
 
 def ensure_build_path_exists(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
-def record_init_commit_hash(config, log):
-    ensure_build_path_exists(config["BUILD_PATH"])
-    commit_hash = get_latest_commit_hash(config["REPO_PATH"], log)
+def record_init_commit_hash(config,env, log):
+    build_path = os.path.join(env['REPO_PATH'], config['BUILD_PATH'])
+    ensure_build_path_exists(build_path)
+    commit_hash = get_latest_commit_hash(env["REPO_PATH"], log)
     if commit_hash:
-        log.info(f"'{config["REPO_PATH"]}' Initial commit hash: {commit_hash}")
+        log.info(f"'{env['REPO_PATH']}' Initial commit hash: {commit_hash}")
     return commit_hash
 
 def check_butler_login():
@@ -233,34 +249,34 @@ def check_butler_login():
         exit(1)
 
 
-def build_project_always(config, log):
-    log.info(f"'{config['REPO_PATH']}' NO_GIT flag is set. Building project directly.")
-    build_unity_project(config, log)
+def build_project_always(config, env, log):
+    log.info(f"'{env['REPO_PATH']}' NO_GIT flag is set. Building project directly.")
+    build_unity_project(config, env, log)
 
 
-def build_project_on_commit_change(config, log, last_commit_hashes, forced_built):
-    repo_path = config["REPO_PATH"]
+def build_project_on_commit_change(config,env, log, last_commit_hashes, forced_built):
+    repo_path = env["REPO_PATH"]
 
     log.info(f"'{repo_path}' Checking for new commits...")
 
     try:
-        pull_latest_changes(repo_path, config["BRANCH"], log)
+        pull_latest_changes(repo_path, env["BRANCH"], log)
         current_commit_hash = get_latest_commit_hash(repo_path, log)
         if current_commit_hash is None:
             log.warning(f"'{repo_path}' Skipping project due to invalid git repository.")
             return
 
-        should_force = config.get("FORCE", False) and repo_path not in forced_built
+        should_force = env.get("FORCE", False) and repo_path not in forced_built
 
         if should_force:
             log.info(f"'{repo_path}' Forced build triggered.")
-            build_unity_project(config, log)
+            build_unity_project(config,env, log)
             last_commit_hashes[repo_path] = current_commit_hash
             forced_built.add(repo_path)
         elif current_commit_hash != last_commit_hashes[repo_path]:
             log.info(f"'{repo_path}' New commit detected: {current_commit_hash}")
             last_commit_hashes[repo_path] = current_commit_hash
-            build_unity_project(config, log)
+            build_unity_project(config,env, log)
         else:
             log.info(f"'{repo_path}' No new commits found.")
 
@@ -273,7 +289,7 @@ def init_loggers_and_hashes():
     last_commit_hashes = {}
 
     for config in Config.CONFIGS:
-        repo_path = config["REPO_PATH"]
+        repo_path = Config.ENV["REPO_PATH"]
         log = setup_logger(repo_path)
         loggers[repo_path] = log
 
@@ -281,7 +297,7 @@ def init_loggers_and_hashes():
             log.info(f"'{repo_path}' NO_GIT flag is enabled. Will only build, skipping git.")
             continue
 
-        initial_hash = record_init_commit_hash(config, log)
+        initial_hash = record_init_commit_hash(config, Config.ENV, log)
         if initial_hash is None:
             log.warning(f"'{repo_path}' Skipping project due to invalid git repository.")
             continue
@@ -290,9 +306,6 @@ def init_loggers_and_hashes():
 
     return loggers, last_commit_hashes
 
-def ensure_log_folder_exists():
-    if not os.path.exists("log"):
-        os.makedirs("log")
 
 def execute_no_git(loggers):
     # Отдельно собрать NO_GIT-конфиги и удалить их из общего списка
@@ -300,13 +313,13 @@ def execute_no_git(loggers):
 
     # Сначала выполнить билд для NO_GIT-конфигов
     for config in no_git_configs:
-        repo_path = config["REPO_PATH"]
+        repo_path = Config.ENV["REPO_PATH"]
         log = loggers[repo_path]
-        build_project_always(config, log)
+        build_project_always(config, Config.ENV, log)
 
 
 def main():
-    ensure_log_folder_exists()
+    ensure_build_path_exists("log")
     loggers, last_commit_hashes = init_loggers_and_hashes()
     forced_built = set()
 
@@ -316,11 +329,11 @@ def main():
     # Теперь работать только с git-конфигами в цикле
     while True:
         for config in git_configs:
-            repo_path = config["REPO_PATH"]
+            repo_path = Config.ENV["REPO_PATH"]
             log = loggers[repo_path]
             if repo_path not in last_commit_hashes:
                 continue
-            build_project_on_commit_change(config, log, last_commit_hashes, forced_built)
+            build_project_on_commit_change(config, Config.ENV, log, last_commit_hashes, forced_built)
 
         time.sleep(CHECK_INTERVAL)
 
