@@ -1,12 +1,12 @@
 # List of project configurations
 
 ENV = {
-    "ITCH_PROJECT": 'sangheli/pay-or-die',
+    "ITCH_PROJECT": 'sangheli/debug1',
     "BRANCH": 'origin/main',
-    "REPO_PATH": 'C:\\_Work\\PayOrDie',
+    "REPO_PATH": 'C:\\_Work\\geometric-fighter-private',
     "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.2.6f2\\Editor\\Unity.exe"',
     "FORCE_BUILD_GIT": True, # skip git listen on first build
-    "UPLOAD_TO_ITCH": True,
+    "UPLOAD_TO_ITCH": False,
     "TELEGRAM_BOT_TOKEN": "",
     "TELEGRAM_CHAT_ID": "",
     "DROPBOX_PATH": "C:\\Dropbox\\Public",

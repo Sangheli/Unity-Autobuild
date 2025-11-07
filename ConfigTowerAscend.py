@@ -1,9 +1,9 @@
 # List of project configurations
 
 ENV = {
-    "ITCH_PROJECT": 'sangheli/pay-or-die',
+    "ITCH_PROJECT": 'sangheli/towerascend',
     "BRANCH": 'origin/main',
-    "REPO_PATH": 'C:\\_Work\\PayOrDie',
+    "REPO_PATH": 'C:\\_work\\TowerAscend',
     "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.2.6f2\\Editor\\Unity.exe"',
     "FORCE_BUILD_GIT": True, # skip git listen on first build
     "UPLOAD_TO_ITCH": True,

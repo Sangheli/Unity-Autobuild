@@ -1,9 +1,9 @@
 # List of project configurations
 
 ENV = {
-    "ITCH_PROJECT": 'sangheli/pay-or-die',
+    "ITCH_PROJECT": 'sangheli/example',
     "BRANCH": 'origin/main',
-    "REPO_PATH": 'C:\\_Work\\PayOrDie',
+    "REPO_PATH": 'C:\\_Work\\exaple',
     "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.2.6f2\\Editor\\Unity.exe"',
     "FORCE_BUILD_GIT": True, # skip git listen on first build
     "UPLOAD_TO_ITCH": True,
@@ -17,7 +17,10 @@ CONFIGS = [
         "BUILD_PATH": 'webgl_build',
         "ITCH_TARGET": 'webgl',
         "BUILD_TARGET": "WebGL",
-        "NO_GIT": True,
+        "ZIP_BEFORE_UPLOAD": True,
+        "ZIP_METHOD": "zip",  # zip или 7z
+        "UPLOAD_TELEGRAM": False,
+        "UPLOAD_DROPBOX": False,
     },
     {
         "BUILD_PATH": 'pc_build',
@@ -25,6 +28,9 @@ CONFIGS = [
         "BUILD_TARGET": "Win64",
         "NO_GIT": True,
         "ZIP_BEFORE_UPLOAD": True,
+        "ZIP_METHOD": "zip",  # zip или 7z
+        "UPLOAD_TELEGRAM": False,
+        "UPLOAD_DROPBOX": False,
     },
     {
         "BUILD_PATH": 'mac_build',
@@ -32,12 +38,19 @@ CONFIGS = [
         "BUILD_TARGET": "OSX",
         "NO_GIT": True,
         "ZIP_BEFORE_UPLOAD": True,
+        "ZIP_METHOD": "zip",  # zip или 7z
+        "UPLOAD_TELEGRAM": False,
+        "UPLOAD_DROPBOX": False,
     },
     {
         "BUILD_PATH": 'androidBuild',
         "ITCH_TARGET": 'android',
         "BUILD_TARGET": "Android",
         "NO_GIT": True,
+        "ZIP_BEFORE_UPLOAD": False,
+        "ZIP_METHOD": "zip",  # zip или 7z
+        "UPLOAD_TELEGRAM": False,
+        "UPLOAD_DROPBOX": False,
     },
     {
         "BUILD_PATH": 'linux_build',
@@ -45,5 +58,8 @@ CONFIGS = [
         "BUILD_TARGET": "Linux64",
         "NO_GIT": True,
         "ZIP_BEFORE_UPLOAD": True,
+        "ZIP_METHOD": "zip",  # zip или 7z
+        "UPLOAD_TELEGRAM": False,
+        "UPLOAD_DROPBOX": False,
     },
 ]
