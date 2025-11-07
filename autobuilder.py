@@ -13,7 +13,7 @@ from git import Repo
 from git.exc import InvalidGitRepositoryError
 from io import StringIO
 import shutil
-import ConfigPayOrDie as Config
+import ConfigGeometriFighter as Config
 
 log_buffers = {}  # repo_path -> StringIO
 
@@ -78,10 +78,18 @@ def extract_git_history(repo_path, hash, log):
 
 
 # Setup per-project loggers
-def setup_logger(repo_path):
+def setup_logger(repo_path, build_target):
     project_name = os.path.basename(repo_path.strip("\\/"))
-    logger = logging.getLogger(project_name)
+    logger = logging.getLogger(f"{project_name}_{build_target}")
     logger.setLevel(logging.INFO)
+
+    # Добавляем фильтр, который вставляет платформу в каждое сообщение
+    class PlatformFilter(logging.Filter):
+        def filter(self, record):
+            record.msg = f"[{build_target}] {record.msg}"
+            return True
+
+    logger.addFilter(PlatformFilter())
 
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     color_formatter = colorlog.ColoredFormatter(
@@ -96,7 +104,7 @@ def setup_logger(repo_path):
     )
 
     # File handler
-    log_file = os.path.join("log", f'{project_name}.log')
+    log_file = os.path.join("log", f'{project_name}_{build_target}.log')
     fh = handlers.RotatingFileHandler(log_file, maxBytes=5_000_000, backupCount=2)
     fh.setFormatter(formatter)
 
@@ -205,6 +213,9 @@ def get_unity_build_command(config, env):
     )
 
 
+# Глобальный список для сбора всех ошибок
+ALL_ERRORS = []
+
 def build_unity_project(config, env, log):
     try:
         log.info(f"'{env['REPO_PATH']}' Starting Unity build...")
@@ -224,9 +235,13 @@ def build_unity_project(config, env, log):
         log.info(f"'{env['REPO_PATH']}' Build done.")
 
     except subprocess.CalledProcessError as e:
-        log.error(f"'{env['REPO_PATH']}' Unity build or upload failed: {e}")
+        msg = f"'{env['REPO_PATH']}' Unity build or upload failed: {e}"
+        log.error(msg)
+        ALL_ERRORS.append(msg)
     except Exception as e:
-        log.exception(f"Unexpected error during build: {e}")
+        msg = f"Unexpected error during build for '{env['REPO_PATH']}': {e}"
+        log.exception(msg)
+        ALL_ERRORS.append(msg)
 
 
 def ensure_build_path_exists(path):
@@ -290,7 +305,8 @@ def init_loggers_and_hashes():
 
     for config in Config.CONFIGS:
         repo_path = Config.ENV["REPO_PATH"]
-        log = setup_logger(repo_path)
+        build_target = config.get("BUILD_TARGET", "Unknown")
+        log = setup_logger(repo_path, build_target)
         loggers[repo_path] = log
 
         if config.get("NO_GIT", False):
@@ -317,6 +333,13 @@ def execute_no_git(loggers):
         log = loggers[repo_path]
         build_project_always(config, Config.ENV, log)
 
+    if no_git_configs:
+        # После завершения всех NO_GIT сборок
+        for config in no_git_configs:
+            repo_path = Config.ENV["REPO_PATH"]
+            log = loggers[repo_path]
+            log.info(f"All NO_GIT builds completed successfully.")
+
 
 def main():
     ensure_build_path_exists("log")
@@ -324,6 +347,15 @@ def main():
     forced_built = set()
 
     execute_no_git(loggers)
+
+    # После выполнения всех no_git билдов вывести общий лог
+    if ALL_ERRORS:
+        print("\n========== ⚠️ BUILD ERRORS SUMMARY ⚠️ ==========")
+        for err in ALL_ERRORS:
+            print(err)
+        print("===============================================\n")
+    else:
+        print("\n✅ All NO_GIT builds completed without errors.\n")
 
     git_configs = [config for config in Config.CONFIGS if not config.get("NO_GIT", False)]
     # Теперь работать только с git-конфигами в цикле
