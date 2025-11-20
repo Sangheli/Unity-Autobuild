@@ -13,7 +13,8 @@ from git import Repo
 from git.exc import InvalidGitRepositoryError
 from io import StringIO
 import shutil
-import ConfigGeometriFighter as Config
+import ConfigPayOrDie as Config
+import UnityPath
 
 log_buffers = {}  # repo_path -> StringIO
 
@@ -201,11 +202,13 @@ def get_history_file(config,env, log):
     hash = get_latest_commit_hash(env["REPO_PATH"], log)
     return extract_git_history(env["REPO_PATH"], hash, log)
 
-def get_unity_build_command(config, env):
+def get_unity_build_command(config, env, ENV_UNITY):
     # Build the single command string as you would run it in the terminal
+
+    unity_path = UnityPath.get_unity_path(ENV_UNITY)
     return (
         # f'sudo '
-        f'{env["UNITY_EXECUTABLE"]} -batchmode -nographics -quit '
+        f'{unity_path} -batchmode -nographics -quit '
         f'-projectPath "{env["REPO_PATH"]}" '
         f'-executeMethod Builder.Build '
         f'-buildTarget {config["BUILD_TARGET"]} '
@@ -216,10 +219,10 @@ def get_unity_build_command(config, env):
 # Глобальный список для сбора всех ошибок
 ALL_ERRORS = []
 
-def build_unity_project(config, env, log):
+def build_unity_project(config, env, ENV_UNITY, log):
     try:
         log.info(f"'{env['REPO_PATH']}' Starting Unity build...")
-        cmd = get_unity_build_command(config, env)
+        cmd = get_unity_build_command(config, env, ENV_UNITY)
         subprocess.run(cmd, shell=True, check=True)
         log.info(f"'{env['REPO_PATH']}' Unity build completed successfully.")
 
@@ -264,12 +267,12 @@ def check_butler_login():
         exit(1)
 
 
-def build_project_always(config, env, log):
+def build_project_always(config, env, ENV_UNITY, log):
     log.info(f"'{env['REPO_PATH']}' NO_GIT flag is set. Building project directly.")
-    build_unity_project(config, env, log)
+    build_unity_project(config, env, ENV_UNITY, log)
 
 
-def build_project_on_commit_change(config,env, log, last_commit_hashes, forced_built):
+def build_project_on_commit_change(config,env, ENV_UNITY, log, last_commit_hashes, forced_built):
     repo_path = env["REPO_PATH"]
 
     log.info(f"'{repo_path}' Checking for new commits...")
@@ -285,13 +288,13 @@ def build_project_on_commit_change(config,env, log, last_commit_hashes, forced_b
 
         if should_force:
             log.info(f"'{repo_path}' Forced build triggered.")
-            build_unity_project(config,env, log)
+            build_unity_project(config,env, ENV_UNITY, log)
             last_commit_hashes[repo_path] = current_commit_hash
             forced_built.add(repo_path)
         elif current_commit_hash != last_commit_hashes[repo_path]:
             log.info(f"'{repo_path}' New commit detected: {current_commit_hash}")
             last_commit_hashes[repo_path] = current_commit_hash
-            build_unity_project(config,env, log)
+            build_unity_project(config,env, ENV_UNITY, log)
         else:
             log.info(f"'{repo_path}' No new commits found.")
 
@@ -331,7 +334,7 @@ def execute_no_git(loggers):
     for config in no_git_configs:
         repo_path = Config.ENV["REPO_PATH"]
         log = loggers[repo_path]
-        build_project_always(config, Config.ENV, log)
+        build_project_always(config, Config.ENV, Config.ENV_UNITY, log)
 
     if no_git_configs:
         # После завершения всех NO_GIT сборок
@@ -365,7 +368,7 @@ def main():
             log = loggers[repo_path]
             if repo_path not in last_commit_hashes:
                 continue
-            build_project_on_commit_change(config, Config.ENV, log, last_commit_hashes, forced_built)
+            build_project_on_commit_change(config, Config.ENV, Config.ENV_UNITY, log, last_commit_hashes, forced_built)
 
         time.sleep(CHECK_INTERVAL)
 
