@@ -13,7 +13,7 @@ from git import Repo
 from git.exc import InvalidGitRepositoryError
 from io import StringIO
 import shutil
-import ConfigPayOrDie as Config
+from Configs import ConfigPayOrDie as Config
 import UnityPath
 
 log_buffers = {}  # repo_path -> StringIO
