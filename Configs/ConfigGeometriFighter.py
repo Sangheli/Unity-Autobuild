@@ -1,10 +1,16 @@
 # List of project configurations
 
+ENV_UNITY = {
+    "UNITY_EXECUTABLE_WINDOWS": 'C:\\Program Files\\Unity\\Hub',
+    "UNITY_EXECUTABLE_LINUX": '',
+    "UNITY_EXECUTABLE_MAC": '',
+    "UNITY_VERSION": '6000.2.6f2',
+}
+
 ENV = {
     "ITCH_PROJECT": 'sangheli/geometric-fighter',
     "BRANCH": 'origin/main',
     "REPO_PATH": 'C:\\_work\\geometric-fighter-private',
-    "UNITY_EXECUTABLE": '"C:\\Program Files\\Unity\\Hub\\Editor\\6000.2.6f2\\Editor\\Unity.exe"',
     "FORCE_BUILD_GIT": True, # skip git listen on first build
     "UPLOAD_TO_ITCH": True,
     "TELEGRAM_BOT_TOKEN": "",
