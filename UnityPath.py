@@ -1,7 +1,7 @@
 import platform
 import os
 
-def get_unity_path(env):
+def get(env):
     PLATFORM = platform.system()
 
     if PLATFORM == "Windows":

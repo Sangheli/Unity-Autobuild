@@ -1,3 +1,4 @@
 .idea/
 /__pycache__
 *.log
+Configs/__pycache__/ConfigPayOrDie.cpython-312.pyc

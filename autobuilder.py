@@ -15,11 +15,9 @@ from io import StringIO
 import shutil
 from Configs import ConfigPayOrDie as Config
 import UnityPath
+import ButlerPath
 
 log_buffers = {}  # repo_path -> StringIO
-
-BUTLER_EXECUTABLE = './butler'  # Path to the butler executable (assuming you're running the script from the butler directory)
-                                # you can read about butler here https://itch.io/docs/butler/login.html
 
 CHECK_INTERVAL = 60  # Time in seconds to wait before checking for new commits
 
@@ -164,7 +162,7 @@ def upload_itch(config, env,log, build_path_to_push):
 
     log.info(f"'{env['REPO_PATH']}' Uploading build to Itch.io...")
     subprocess.run([
-        BUTLER_EXECUTABLE,
+        ButlerPath.get(),
         'push',
         build_path_to_push,
         f"{env['ITCH_PROJECT']}:{config['ITCH_TARGET']}"
@@ -205,7 +203,7 @@ def get_history_file(config,env, log):
 def get_unity_build_command(config, env, ENV_UNITY):
     # Build the single command string as you would run it in the terminal
 
-    unity_path = UnityPath.get_unity_path(ENV_UNITY)
+    unity_path = UnityPath.get(ENV_UNITY)
     return (
         # f'sudo '
         f'{unity_path} -batchmode -nographics -quit '
@@ -261,7 +259,7 @@ def record_init_commit_hash(config,env, log):
 
 def check_butler_login():
     try:
-        subprocess.run([BUTLER_EXECUTABLE, 'whoami'], check=True, stdout=subprocess.DEVNULL)
+        subprocess.run([ButlerPath.get(), 'whoami'], check=True, stdout=subprocess.DEVNULL)
     except subprocess.CalledProcessError:
         print("Butler is not logged in. Run `butler login` manually.")
         exit(1)
