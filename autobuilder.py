@@ -13,7 +13,7 @@ from git import Repo
 from git.exc import InvalidGitRepositoryError
 from io import StringIO
 import shutil
-from Configs import ConfigPayOrDie as Config
+from Configs import ConfigDiablo as Config
 import UnityPath
 import ButlerPath
 

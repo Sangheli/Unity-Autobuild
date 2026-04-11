@@ -8,7 +8,7 @@ ENV_UNITY = {
 }
 
 ENV = {
-    "ITCH_PROJECT": 'sangheli/pay-or-die',
+    "ITCH_PROJECT": 'sangheli/a-short-and-stupid-game-where-you-need-to-find-a-key-and-escape-to-the-portal',
     "BRANCH": 'origin/main',
     "REPO_PATH": 'C:\\_Work\\NuclearEscape',
     "FORCE_BUILD_GIT": True, # skip git listen on first build
