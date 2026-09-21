@@ -13,7 +13,7 @@ from git import Repo
 from git.exc import InvalidGitRepositoryError
 from io import StringIO
 import shutil
-from Configs import ConfigDiablo as Config
+from Configs import ConfigResidentEvil as Config, ProjectSettingsParser
 import UnityPath
 import ButlerPath
 
@@ -309,6 +309,15 @@ def init_loggers_and_hashes():
         build_target = config.get("BUILD_TARGET", "Unknown")
         log = setup_logger(repo_path, build_target)
         loggers[repo_path] = log
+
+        # Auto-detect UNITY_VERSION from ProjectSettings/ProjectVersion.txt if empty
+        if not Config.ENV_UNITY.get("UNITY_VERSION", ""):
+            detected_version = ProjectSettingsParser.get_unity_version_from_project(repo_path)
+            if detected_version:
+                Config.ENV_UNITY["UNITY_VERSION"] = detected_version
+                log.info(f"'{repo_path}' Auto-detected Unity version: {detected_version}")
+            else:
+                log.warning(f"'{repo_path}' Could not detect Unity version from ProjectSettings. Using fallback.")
 
         if config.get("NO_GIT", False):
             log.info(f"'{repo_path}' NO_GIT flag is enabled. Will only build, skipping git.")
