@@ -4,7 +4,6 @@ ENV_UNITY = {
     "UNITY_EXECUTABLE_WINDOWS": 'C:\\Program Files\\Unity\\Hub',
     "UNITY_EXECUTABLE_LINUX": '',
     "UNITY_EXECUTABLE_MAC": '',
-    "UNITY_VERSION": '6000.2.6f2',
 }
 
 ENV = {

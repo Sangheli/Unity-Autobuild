@@ -4,7 +4,6 @@ ENV_UNITY = {
     "UNITY_EXECUTABLE_WINDOWS": 'C:\\Program Files\\Unity\\Hub',
     "UNITY_EXECUTABLE_LINUX": '/run/media/bazzite/40476caa-c86d-4f82-89be-d544eaeeb5d8/downloads/unity/unityhub/',
     "UNITY_EXECUTABLE_MAC": '/Applications/Unity/Hub/',
-    "UNITY_VERSION": '6000.4.2f1',
 }
 
 ENV = {

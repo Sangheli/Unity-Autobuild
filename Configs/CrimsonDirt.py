@@ -1,0 +1,54 @@
+# List of project configurations
+
+ENV_UNITY = {
+    "UNITY_EXECUTABLE_WINDOWS": 'C:\\Program Files\\Unity\\Hub',
+    "UNITY_EXECUTABLE_LINUX": '/run/media/bazzite/40476caa-c86d-4f82-89be-d544eaeeb5d8/downloads/unity/unityhub/',
+    "UNITY_EXECUTABLE_MAC": '/Applications/Unity/Hub/',
+}
+
+ENV = {
+    "ITCH_PROJECT": 'sangheli/debug1',
+    "BRANCH": 'origin/main',
+    "REPO_PATH": 'C:\\_Work\\ld59-crimson-dirt',
+    "FORCE_BUILD_GIT": True, # skip git listen on first build
+    "UPLOAD_TO_ITCH": False,
+    "TELEGRAM_BOT_TOKEN": "",
+    "TELEGRAM_CHAT_ID": "",
+    "DROPBOX_PATH": "C:\\Dropbox\\Public",
+}
+
+CONFIGS = [
+    {
+        "BUILD_PATH": 'webgl_build',
+        "ITCH_TARGET": 'webgl',
+        "BUILD_TARGET": "WebGL",
+        "NO_GIT": True,
+    },
+    {
+        "BUILD_PATH": 'pc_build',
+        "ITCH_TARGET": 'win',
+        "BUILD_TARGET": "Win64",
+        "NO_GIT": True,
+        "ZIP_BEFORE_UPLOAD": True,
+    },
+    {
+        "BUILD_PATH": 'mac_build',
+        "ITCH_TARGET": 'mac',
+        "BUILD_TARGET": "OSX",
+        "NO_GIT": True,
+        "ZIP_BEFORE_UPLOAD": True,
+    },
+    {
+        "BUILD_PATH": 'androidBuild',
+        "ITCH_TARGET": 'android',
+        "BUILD_TARGET": "Android",
+        "NO_GIT": True,
+    },
+    {
+        "BUILD_PATH": 'linux_build',
+        "ITCH_TARGET": 'linux',
+        "BUILD_TARGET": "Linux64",
+        "NO_GIT": True,
+        "ZIP_BEFORE_UPLOAD": True,
+    },
+]
